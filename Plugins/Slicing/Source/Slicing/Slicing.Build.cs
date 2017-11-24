@@ -13,7 +13,7 @@ public class Slicing : ModuleRules
 				"Slicing/Public"
 				// ... add public include paths required here ...
 			}
-			);
+		);
 				
 		
 		PrivateIncludePaths.AddRange(
@@ -21,18 +21,18 @@ public class Slicing : ModuleRules
 				"Slicing/Private",
 				// ... add other private include paths required here ...
 			}
-			);
-			
-		
-		PublicDependencyModuleNames.AddRange(
+		);
+
+        // Public dependencies that are statically linked
+        PublicDependencyModuleNames.AddRange(
 			new string[]
 			{
 				"Core",
-				// ... add other public dependencies that you statically link with here ...
-			}
-			);
+                "StaticMeshEditor"
+            }
+		);
 			
-		
+		// Private dependencies that are statically linked
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
@@ -44,9 +44,8 @@ public class Slicing : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-				// ... add private dependencies that you statically link with here ...	
 			}
-			);
+		);
 		
 		
 		DynamicallyLoadedModuleNames.AddRange(
@@ -54,6 +53,6 @@ public class Slicing : ModuleRules
 			{
 				// ... add any modules that your module loads dynamically here ...
 			}
-			);
+		);
 	}
 }
