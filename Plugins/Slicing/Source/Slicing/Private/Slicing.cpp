@@ -3,7 +3,8 @@
 #include "Slicing.h"
 #include "SlicingStyle.h"
 #include "SlicingCommands.h"
-#include "LevelEditor.h"
+//#include "LevelEditor.h"
+#include "StaticMeshEditorModule.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
@@ -29,21 +30,46 @@ void FSlicingModule::StartupModule()
 		FExecuteAction::CreateRaw(this, &FSlicingModule::PluginButtonClicked),
 		FCanExecuteAction());
 		
-	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+	//FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+	IStaticMeshEditorModule& StaticMeshEditorModule = FModuleManager::Get().LoadModuleChecked<IStaticMeshEditorModule>("StaticMeshEditor");
+	//IStaticMeshEditorModule* StaticMeshEditorModule = FModuleManager::Get().GetModulePtr<IStaticMeshEditorModule>("StaticMeshEditor");
 	
-	{
+	// Add menu entry
+	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
+	MenuExtender->AddMenuBarExtension(
+		"Collision",
+		EExtensionHook::After,
+		PluginCommands,
+		FMenuBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddMenuBarExtension)
+	);
+	StaticMeshEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
+
+	// Add toolbar entry
+	TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
+	ToolbarExtender->AddToolBarExtension(
+		"Command",
+		EExtensionHook::After,
+		PluginCommands,
+		FToolBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddToolbarExtension)
+	);
+	StaticMeshEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
+
+
+	// Add menu entry
+	/*{
 		TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
 		MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, PluginCommands, FMenuExtensionDelegate::CreateRaw(this, &FSlicingModule::AddMenuExtension));
 
 		LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 	}
 	
+	// Add toolbar entry
 	{
 		TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
 		ToolbarExtender->AddToolBarExtension("Settings", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddToolbarExtension));
 		
 		LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
-	}
+	}*/
 	
 	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SlicingTabName, FOnSpawnTab::CreateRaw(this, &FSlicingModule::OnSpawnPluginTab))
 		.SetDisplayName(LOCTEXT("FSlicingTabTitle", "Slicing"))
@@ -89,6 +115,11 @@ void FSlicingModule::PluginButtonClicked()
 }
 
 void FSlicingModule::AddMenuExtension(FMenuBuilder& Builder)
+{
+	Builder.AddMenuEntry(FSlicingCommands::Get().OpenPluginWindow);
+}
+
+void FSlicingModule::AddMenuBarExtension(FMenuBarBuilder& Builder)
 {
 	Builder.AddMenuEntry(FSlicingCommands::Get().OpenPluginWindow);
 }
