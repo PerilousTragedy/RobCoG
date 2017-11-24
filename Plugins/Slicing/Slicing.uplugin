@@ -18,6 +18,10 @@
 			"Name": "Slicing",
 			"Type": "Editor",
 			"LoadingPhase": "Default"
+			"AdditionalDependencies": [
+				 "Engine",
+				 "ProceduralMeshComponent"
+			]
 		}
 	]
 }

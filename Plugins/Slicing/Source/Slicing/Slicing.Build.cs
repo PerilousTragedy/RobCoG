@@ -28,6 +28,8 @@ public class Slicing : ModuleRules
 			new string[]
 			{
 				"Core",
+                "StaticMeshEditor",
+                "ProceduralMeshComponent"
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -44,6 +46,7 @@ public class Slicing : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
+                "ProceduralMeshComponent"
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
