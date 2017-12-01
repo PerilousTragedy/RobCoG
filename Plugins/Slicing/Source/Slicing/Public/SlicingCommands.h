@@ -9,15 +9,19 @@
 class FSlicingCommands : public TCommands<FSlicingCommands>
 {
 public:
-
-	FSlicingCommands()
-		: TCommands<FSlicingCommands>(TEXT("Slicing"), NSLOCTEXT("Contexts", "Slicing", "Slicing Plugin"), NAME_None, FSlicingStyle::GetStyleSetName())
-	{
-	}
+	FSlicingCommands(): TCommands<FSlicingCommands>(
+		TEXT("Slicing"), // Context name for fast lookup
+		NSLOCTEXT("Contexts", "Slicing", "Slicing Plugin"), // Localized context name
+		NAME_None, // Parent
+		FSlicingStyle::GetStyleSetName() // Icon Style Set
+		){}
 
 	// TCommands<> interface
 	virtual void RegisterCommands() override;
 
-public:
-	TSharedPtr< FUICommandInfo > OpenPluginWindow;
+	TSharedPtr<FUICommandInfo> OpenPluginWindow;
+	TSharedPtr<FUICommandInfo> ShowSlicingElements;
+	TSharedPtr<FUICommandInfo> CreateHandle;
+	TSharedPtr<FUICommandInfo> CreateBlade;
+	TSharedPtr<FUICommandInfo> CreateCuttingExitpoint;
 };

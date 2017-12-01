@@ -23,24 +23,37 @@ void FSlicingModule::StartupModule()
 
 	FSlicingCommands::Register();
 	
-	PluginCommands = MakeShareable(new FUICommandList);
+	PluginCommandList = MakeShareable(new FUICommandList);
+	const FSlicingCommands& Commands = FSlicingCommands::Get();
 
-	PluginCommands->MapAction(
-		FSlicingCommands::Get().OpenPluginWindow,
+	PluginCommandList->MapAction(
+		Commands.OpenPluginWindow,
 		FExecuteAction::CreateRaw(this, &FSlicingModule::PluginButtonClicked),
 		FCanExecuteAction());
+
+	PluginCommandList->MapAction(
+		Commands.CreateHandle,
+		FExecuteAction::CreateRaw(this, &FSlicingModule::CreateHandle)
+	);
+	PluginCommandList->MapAction(
+		Commands.CreateBlade,
+		FExecuteAction::CreateRaw(this, &FSlicingModule::CreateBlade)
+	);
+	PluginCommandList->MapAction(
+		Commands.CreateCuttingExitpoint,
+		FExecuteAction::CreateRaw(this, &FSlicingModule::CreateCuttingExitpoint)
+	);
 		
-	//FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
-	IStaticMeshEditorModule& StaticMeshEditorModule = FModuleManager::Get().LoadModuleChecked<IStaticMeshEditorModule>("StaticMeshEditor");
-	//IStaticMeshEditorModule* StaticMeshEditorModule = FModuleManager::Get().GetModulePtr<IStaticMeshEditorModule>("StaticMeshEditor");
+	IStaticMeshEditorModule& StaticMeshEditorModule =
+		FModuleManager::Get().LoadModuleChecked<IStaticMeshEditorModule>("StaticMeshEditor");
 	
-	// Add menu entry
+	// Add menubar entry
 	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
 	MenuExtender->AddMenuBarExtension(
 		"Collision",
 		EExtensionHook::After,
-		PluginCommands,
-		FMenuBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddMenuBarExtension)
+		PluginCommandList,
+		FMenuBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddSlicingMenuBar)
 	);
 	StaticMeshEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 
@@ -49,8 +62,8 @@ void FSlicingModule::StartupModule()
 	ToolbarExtender->AddToolBarExtension(
 		"Command",
 		EExtensionHook::After,
-		PluginCommands,
-		FToolBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddToolbarExtension)
+		PluginCommandList,
+		FToolBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddSlicingToolbar)
 	);
 	StaticMeshEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 
@@ -114,17 +127,52 @@ void FSlicingModule::PluginButtonClicked()
 	FGlobalTabmanager::Get()->InvokeTab(SlicingTabName);
 }
 
+void FSlicingModule::CreateHandle()
+{
+	UE_LOG(LogTemp, Warning, TEXT("CREATED HANDLE"));
+}
+
+void FSlicingModule::CreateBlade()
+{
+	UE_LOG(LogTemp, Warning, TEXT("CREATED BLADE"));
+}
+
+void FSlicingModule::CreateCuttingExitpoint()
+{
+	UE_LOG(LogTemp, Warning, TEXT("CREATED CUTTING EXITPOINT"));
+}
+
+static void CreateSlicingMenu(FMenuBuilder& Builder)
+{
+	const FSlicingCommands& Commands = FSlicingCommands::Get();
+	
+	Builder.BeginSection("SlicingAddSlicingElements");
+	{
+		Builder.AddMenuEntry(Commands.CreateHandle);
+		Builder.AddMenuEntry(Commands.CreateBlade);
+		Builder.AddMenuEntry(Commands.CreateCuttingExitpoint);
+	}
+	Builder.EndSection();
+}
+
 void FSlicingModule::AddMenuExtension(FMenuBuilder& Builder)
 {
 	Builder.AddMenuEntry(FSlicingCommands::Get().OpenPluginWindow);
 }
 
-void FSlicingModule::AddMenuBarExtension(FMenuBarBuilder& Builder)
+void FSlicingModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)
 {
-	Builder.AddMenuEntry(FSlicingCommands::Get().OpenPluginWindow);
+	Builder.AddPullDownMenu(
+		LOCTEXT("SlicingPluginMenu", "Slicing"),
+		LOCTEXT("SlicingPluginMenu_ToolTip", "Opens a menu with commands for creating the elements needed to make the static mesh be able to slice."),
+		FNewMenuDelegate::CreateStatic(CreateSlicingMenu),
+		"Slicing"
+	);
+	
+	//Builder.AddMenuEntry(FSlicingCommands::Get().OpenPluginWindow);
 }
 
-void FSlicingModule::AddToolbarExtension(FToolBarBuilder& Builder)
+void FSlicingModule::AddSlicingToolbar(FToolBarBuilder& Builder)
 {
 	Builder.AddToolBarButton(FSlicingCommands::Get().OpenPluginWindow);
 }
