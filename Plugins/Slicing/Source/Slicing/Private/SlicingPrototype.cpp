@@ -1,10 +1,34 @@
 
-#include "Slicing.h"
 #include "SlicingPrototype.h"
+#include "Slicing.h"
 #include "LevelEditor.h"
 #include "ProceduralMeshComponent.h"
 #include "StaticMeshResources.h"
 #include "Engine/StaticMesh.h"
+#include "DrawDebugHelpers.h"
+
+// InputComponent being the blade to debug.
+void FSlicingPrototype::Debug(UPrimitiveComponent* InputBladeComponent)
+{
+	if (bDebugPrintText)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Debug: == Pending =="));
+	}
+
+	if (bDebugShowPlane)
+	{
+		DrawDebugSolidPlane(InputBladeComponent->GetWorld(), FPlane(2,2,2,0),
+			FVector(InputBladeComponent->GetComponentLocation()),
+			FVector2D(),
+			FColor::Red);
+	}
+
+	// TODO
+	if (bDebugShowWay)
+	{
+
+	}
+}
 
 void FSlicingPrototype::SetMaterialForSection(UMaterialInterface* InputMaterial)
 {

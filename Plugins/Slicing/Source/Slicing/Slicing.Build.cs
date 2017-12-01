@@ -10,7 +10,8 @@ public class Slicing : ModuleRules
 		
 		PublicIncludePaths.AddRange(
 			new string[] {
-				"Slicing/Public"
+                "Slicing/Public",
+                "ProceduralMeshComponent"
 				// ... add public include paths required here ...
 			}
 			);
@@ -29,7 +30,7 @@ public class Slicing : ModuleRules
 			{
 				"Core",
                 "StaticMeshEditor",
-                "ProceduralMeshComponent"
+                "ProceduralMeshComponent",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -46,7 +47,7 @@ public class Slicing : ModuleRules
 				"Engine",
 				"Slate",
 				"SlateCore",
-                "ProceduralMeshComponent"
+                "ProceduralMeshComponent",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

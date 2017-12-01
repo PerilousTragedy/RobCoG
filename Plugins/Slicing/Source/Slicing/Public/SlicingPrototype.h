@@ -6,7 +6,6 @@
 #include "ProceduralMeshComponent.h"
 #include "StaticMeshResources.h"
 
-UCLASS()
 class FSlicingPrototype
 {
 	public:
@@ -24,6 +23,7 @@ class FSlicingPrototype
 
 		UMaterialInterface* MaterialReferenceNewSection = NULL;
 
+		void Debug(UPrimitiveComponent* InputBladeComponent);
 		void ConvertToProceduralMeshComponent(UPrimitiveComponent* ReferencedComponent);
 		void CutGivenComponent(UPrimitiveComponent* ReferencedComponent, FVector PlanePosition, FVector PlaneNormal);
 };
