@@ -1,10 +1,10 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright 2017, Institute for Artificial Intelligence
 
-#include "SlicingCommands.h"
+#include "SlicingEditorCommands.h"
 
-#define LOCTEXT_NAMESPACE "FSlicingModule"
+#define LOCTEXT_NAMESPACE "FSlicingEditorModule"
 
-void FSlicingCommands::RegisterCommands()
+void FSlicingEditorCommands::RegisterCommands()
 {
 	UI_COMMAND(OpenPluginWindow,
 		"Slicing", "Bring up Slicing window", EUserInterfaceActionType::Button, FInputGesture());

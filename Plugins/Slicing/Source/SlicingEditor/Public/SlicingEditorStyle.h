@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright 2017, Institute for Artificial Intelligence
 
 #pragma once
 
@@ -6,7 +6,7 @@
 #include "Styling/SlateStyle.h"
 
 /**  */
-class FSlicingStyle
+class FSlicingEditorStyle
 {
 public:
 

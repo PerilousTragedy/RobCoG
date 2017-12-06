@@ -1,19 +1,19 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright 2017, Institute for Artificial Intelligence
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Framework/Commands/Commands.h"
-#include "SlicingStyle.h"
+#include "SlicingEditorStyle.h"
 
-class FSlicingCommands : public TCommands<FSlicingCommands>
+class FSlicingEditorCommands : public TCommands<FSlicingEditorCommands>
 {
 public:
-	FSlicingCommands(): TCommands<FSlicingCommands>(
+	FSlicingEditorCommands(): TCommands<FSlicingEditorCommands>(
 		TEXT("Slicing"), // Context name for fast lookup
 		NSLOCTEXT("Contexts", "Slicing", "Slicing Plugin"), // Localized context name
 		NAME_None, // Parent
-		FSlicingStyle::GetStyleSetName() // Icon Style Set
+		FSlicingEditorStyle::GetStyleSetName() // Icon Style Set
 		){}
 
 	// TCommands<> interface

@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright 2017, Institute for Artificial Intelligence
 
 #pragma once
 
@@ -8,7 +8,7 @@
 class FToolBarBuilder;
 class FMenuBuilder;
 
-class FSlicingModule : public IModuleInterface
+class FSlicingEditorModule: public IModuleInterface
 {
 public:
 
@@ -31,6 +31,5 @@ private:
 
 	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
 
-private:
 	TSharedPtr<class FUICommandList> PluginCommandList;
 };

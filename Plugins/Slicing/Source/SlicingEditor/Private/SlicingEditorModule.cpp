@@ -1,9 +1,9 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright 2017, Institute for Artificial Intelligence
 
-#include "Slicing.h"
-#include "SlicingStyle.h"
-#include "SlicingCommands.h"
-//#include "LevelEditor.h"
+#include "SlicingEditor.h"
+#include "SlicingEditorStyle.h"
+#include "SlicingEditorCommands.h"
+#include "LevelEditor.h"
 #include "StaticMeshEditorModule.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
@@ -12,36 +12,36 @@
 
 static const FName SlicingTabName("Slicing");
 
-#define LOCTEXT_NAMESPACE "FSlicingModule"
+#define LOCTEXT_NAMESPACE "FSlicingEditorModule"
 
-void FSlicingModule::StartupModule()
+void FSlicingEditorModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
 	
-	FSlicingStyle::Initialize();
-	FSlicingStyle::ReloadTextures();
+	FSlicingEditorStyle::Initialize();
+	FSlicingEditorStyle::ReloadTextures();
 
-	FSlicingCommands::Register();
+	FSlicingEditorCommands::Register();
 	
 	PluginCommandList = MakeShareable(new FUICommandList);
-	const FSlicingCommands& Commands = FSlicingCommands::Get();
+	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
 
 	PluginCommandList->MapAction(
 		Commands.OpenPluginWindow,
-		FExecuteAction::CreateRaw(this, &FSlicingModule::PluginButtonClicked),
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::PluginButtonClicked),
 		FCanExecuteAction());
 
 	PluginCommandList->MapAction(
 		Commands.CreateHandle,
-		FExecuteAction::CreateRaw(this, &FSlicingModule::CreateHandle)
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::CreateHandle)
 	);
 	PluginCommandList->MapAction(
 		Commands.CreateBlade,
-		FExecuteAction::CreateRaw(this, &FSlicingModule::CreateBlade)
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::CreateBlade)
 	);
 	PluginCommandList->MapAction(
 		Commands.CreateCuttingExitpoint,
-		FExecuteAction::CreateRaw(this, &FSlicingModule::CreateCuttingExitpoint)
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::CreateCuttingExitpoint)
 	);
 		
 	IStaticMeshEditorModule& StaticMeshEditorModule =
@@ -53,7 +53,7 @@ void FSlicingModule::StartupModule()
 		"Collision",
 		EExtensionHook::After,
 		PluginCommandList,
-		FMenuBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddSlicingMenuBar)
+		FMenuBarExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddSlicingMenuBar)
 	);
 	StaticMeshEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 
@@ -63,7 +63,7 @@ void FSlicingModule::StartupModule()
 		"Command",
 		EExtensionHook::After,
 		PluginCommandList,
-		FToolBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddSlicingToolbar)
+		FToolBarExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddSlicingToolbar)
 	);
 	StaticMeshEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 
@@ -71,7 +71,7 @@ void FSlicingModule::StartupModule()
 	// Add menu entry
 	/*{
 		TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
-		MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, PluginCommands, FMenuExtensionDelegate::CreateRaw(this, &FSlicingModule::AddMenuExtension));
+		MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, PluginCommands, FMenuExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddMenuExtension));
 
 		LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
 	}
@@ -79,32 +79,32 @@ void FSlicingModule::StartupModule()
 	// Add toolbar entry
 	{
 		TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
-		ToolbarExtender->AddToolBarExtension("Settings", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateRaw(this, &FSlicingModule::AddToolbarExtension));
+		ToolbarExtender->AddToolBarExtension("Settings", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddToolbarExtension));
 		
 		LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 	}*/
 	
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SlicingTabName, FOnSpawnTab::CreateRaw(this, &FSlicingModule::OnSpawnPluginTab))
+	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SlicingTabName, FOnSpawnTab::CreateRaw(this, &FSlicingEditorModule::OnSpawnPluginTab))
 		.SetDisplayName(LOCTEXT("FSlicingTabTitle", "Slicing"))
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 }
 
-void FSlicingModule::ShutdownModule()
+void FSlicingEditorModule::ShutdownModule()
 {
 	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
 	// we call this function before unloading the module.
-	FSlicingStyle::Shutdown();
+	FSlicingEditorStyle::Shutdown();
 
-	FSlicingCommands::Unregister();
+	FSlicingEditorCommands::Unregister();
 
 	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SlicingTabName);
 }
 
-TSharedRef<SDockTab> FSlicingModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
+TSharedRef<SDockTab> FSlicingEditorModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
 {
 	FText WidgetText = FText::Format(
 		LOCTEXT("WindowWidgetText", "Add code to {0} in {1} to override this window's contents"),
-		FText::FromString(TEXT("FSlicingModule::OnSpawnPluginTab")),
+		FText::FromString(TEXT("FSlicingEditorModule::OnSpawnPluginTab")),
 		FText::FromString(TEXT("Slicing.cpp"))
 		);
 
@@ -122,29 +122,29 @@ TSharedRef<SDockTab> FSlicingModule::OnSpawnPluginTab(const FSpawnTabArgs& Spawn
 		];
 }
 
-void FSlicingModule::PluginButtonClicked()
+void FSlicingEditorModule::PluginButtonClicked()
 {
 	FGlobalTabmanager::Get()->InvokeTab(SlicingTabName);
 }
 
-void FSlicingModule::CreateHandle()
+void FSlicingEditorModule::CreateHandle()
 {
 	UE_LOG(LogTemp, Warning, TEXT("CREATED HANDLE"));
 }
 
-void FSlicingModule::CreateBlade()
+void FSlicingEditorModule::CreateBlade()
 {
 	UE_LOG(LogTemp, Warning, TEXT("CREATED BLADE"));
 }
 
-void FSlicingModule::CreateCuttingExitpoint()
+void FSlicingEditorModule::CreateCuttingExitpoint()
 {
 	UE_LOG(LogTemp, Warning, TEXT("CREATED CUTTING EXITPOINT"));
 }
 
 static void CreateSlicingMenu(FMenuBuilder& Builder)
 {
-	const FSlicingCommands& Commands = FSlicingCommands::Get();
+	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
 	
 	Builder.BeginSection("SlicingAddSlicingElements");
 	{
@@ -155,12 +155,12 @@ static void CreateSlicingMenu(FMenuBuilder& Builder)
 	Builder.EndSection();
 }
 
-void FSlicingModule::AddMenuExtension(FMenuBuilder& Builder)
+void FSlicingEditorModule::AddMenuExtension(FMenuBuilder& Builder)
 {
-	Builder.AddMenuEntry(FSlicingCommands::Get().OpenPluginWindow);
+	Builder.AddMenuEntry(FSlicingEditorCommands::Get().OpenPluginWindow);
 }
 
-void FSlicingModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)
+void FSlicingEditorModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)
 {
 	Builder.AddPullDownMenu(
 		LOCTEXT("SlicingPluginMenu", "Slicing"),
@@ -169,14 +169,14 @@ void FSlicingModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)
 		"Slicing"
 	);
 	
-	//Builder.AddMenuEntry(FSlicingCommands::Get().OpenPluginWindow);
+	//Builder.AddMenuEntry(FSlicingEditorCommands::Get().OpenPluginWindow);
 }
 
-void FSlicingModule::AddSlicingToolbar(FToolBarBuilder& Builder)
+void FSlicingEditorModule::AddSlicingToolbar(FToolBarBuilder& Builder)
 {
-	Builder.AddToolBarButton(FSlicingCommands::Get().OpenPluginWindow);
+	Builder.AddToolBarButton(FSlicingEditorCommands::Get().OpenPluginWindow);
 }
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FSlicingModule, Slicing)
+IMPLEMENT_MODULE(FSlicingEditorModule, Slicing)
