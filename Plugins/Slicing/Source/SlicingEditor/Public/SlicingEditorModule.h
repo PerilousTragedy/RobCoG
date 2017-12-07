@@ -1,4 +1,4 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright 2017, Institute for Artificial Intelligence
 
 #pragma once
 
@@ -8,7 +8,7 @@
 class FToolBarBuilder;
 class FMenuBuilder;
 
-class FSlicingModule : public IModuleInterface
+class FSlicingEditorModule: public IModuleInterface
 {
 public:
 
@@ -18,15 +18,18 @@ public:
 	
 	/** This function will be bound to Command (by default it will bring up plugin window) */
 	void PluginButtonClicked();
+
+	void CreateHandle();
+	void CreateBlade();
+	void CreateCuttingExitpoint();
 	
 private:
 
-	void AddToolbarExtension(FToolBarBuilder& Builder);
+	void AddSlicingToolbar(FToolBarBuilder& Builder);
 	void AddMenuExtension(FMenuBuilder& Builder);
-	void AddMenuBarExtension(FMenuBarBuilder& Builder);
+	void AddSlicingMenuBar(FMenuBarBuilder& Builder);
 
 	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
 
-private:
-	TSharedPtr<class FUICommandList> PluginCommands;
+	TSharedPtr<class FUICommandList> PluginCommandList;
 };

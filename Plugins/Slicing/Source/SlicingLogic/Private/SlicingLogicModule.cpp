@@ -1,14 +1,26 @@
+Ôªø// Copyright 2017, Institute for Artificial Intelligence
 
-#include "SlicingPrototype.h"
-#include "Slicing.h"
-#include "LevelEditor.h"
-#include "ProceduralMeshComponent.h"
-#include "StaticMeshResources.h"
+#include "SlicingLogicModule.h"
 #include "Engine/StaticMesh.h"
+#include "StaticMeshResources.h"
+#include "ProceduralMeshComponent.h"
+#include "KismetProceduralMeshLibrary.h"
 #include "DrawDebugHelpers.h"
 
+#define LOCTEXT_NAMESPACE "FSlicingLogicModule"
+
+void FSlicingLogicModule::StartupModule()
+{
+	// Empty as of right now
+}
+
+void FSlicingLogicModule::ShutdownModule()
+{
+	// Empty as of right now
+}
+
 // InputComponent being the blade to debug.
-void FSlicingPrototype::Debug(UPrimitiveComponent* InputBladeComponent)
+void FSlicingLogicModule::Debug(UPrimitiveComponent* InputBladeComponent)
 {
 	if (bDebugPrintText)
 	{
@@ -30,13 +42,13 @@ void FSlicingPrototype::Debug(UPrimitiveComponent* InputBladeComponent)
 	}
 }
 
-void FSlicingPrototype::SetMaterialForSection(UMaterialInterface* InputMaterial)
+void FSlicingLogicModule::SetMaterialForSection(UMaterialInterface* InputMaterial)
 {
 	if (InputMaterial == NULL) return;
 	MaterialReferenceNewSection = InputMaterial;
 }
 
-void FSlicingPrototype::ConvertToProceduralMeshComponent(UPrimitiveComponent* ReferencedComponent)
+void FSlicingLogicModule::ConvertToProceduralMeshComponent(UPrimitiveComponent* ReferencedComponent)
 {
 	// In case the Component is a StaticMeshComponent, uses following to make a ProceduralMeshComponent
 	if (ReferencedComponent != nullptr && ReferencedComponent->GetClass() == UStaticMeshComponent::StaticClass())
@@ -62,20 +74,19 @@ void FSlicingPrototype::ConvertToProceduralMeshComponent(UPrimitiveComponent* Re
 	}
 }
 
-void FSlicingPrototype::CutGivenComponent(UPrimitiveComponent* InputComponent, FVector PlanePosition, FVector PlaneNormal)
+void FSlicingLogicModule::CutGivenComponent(UPrimitiveComponent* InputComponent, FVector PlanePosition, FVector PlaneNormal)
 {
-
 	UProceduralMeshComponent* OutputProceduralMesh;
 
 	/*
 	Input SliceProcedural Mesh
 	1. The Component which will be cut
 	2. Planeposition - Start Position des schneidenen Planes
-	3. PlaneNormal - Richtung in welcher die Flache Fl‰che zeigt
-	4. CreateOtherHalf - Erstellt eine neue H‰lfte nach dem Schnitt falls true
-	5. ProceduralMeshCompoenent Reference auf welchen die zweite H‰lfte drauf gepackt wird.
-	6. EProcmeshSliceCapOption Optionen f¸r die neuen Fl‰chen
-	7. Texturen der neuen Fl‰chen falls richtige Option in 6
+	3. PlaneNormal - Richtung in welcher die Flache Fl√§che zeigt
+	4. CreateOtherHalf - Erstellt eine neue H√§lfte nach dem Schnitt falls true
+	5. ProceduralMeshCompoenent Reference auf welchen die zweite H√§lfte drauf gepackt wird.
+	6. EProcmeshSliceCapOption Optionen f√ºr die neuen Fl√§chen
+	7. Texturen der neuen Fl√§chen falls richtige Option in 6
 	*/
 	UKismetProceduralMeshLibrary::SliceProceduralMesh(
 		(UProceduralMeshComponent*)InputComponent,
@@ -87,3 +98,7 @@ void FSlicingPrototype::CutGivenComponent(UPrimitiveComponent* InputComponent, F
 		MaterialReferenceNewSection
 	);
 }
+
+#undef LOCTEXT_NAMESPACE
+
+IMPLEMENT_MODULE(FSlicingLogicModule, Slicing)

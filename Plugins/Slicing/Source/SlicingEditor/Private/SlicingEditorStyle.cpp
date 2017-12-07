@@ -1,14 +1,14 @@
-// Copyright 1998-2017 Epic Games, Inc. All Rights Reserved.
+// Copyright 2017, Institute for Artificial Intelligence
 
-#include "SlicingStyle.h"
+#include "SlicingEditorStyle.h"
 #include "Styling/SlateStyleRegistry.h"
 #include "Framework/Application/SlateApplication.h"
 #include "SlateGameResources.h"
 #include "IPluginManager.h"
 
-TSharedPtr<FSlateStyleSet> FSlicingStyle::StyleInstance = NULL;
+TSharedPtr<FSlateStyleSet> FSlicingEditorStyle::StyleInstance = NULL;
 
-void FSlicingStyle::Initialize()
+void FSlicingEditorStyle::Initialize()
 {
 	if (!StyleInstance.IsValid())
 	{
@@ -17,14 +17,14 @@ void FSlicingStyle::Initialize()
 	}
 }
 
-void FSlicingStyle::Shutdown()
+void FSlicingEditorStyle::Shutdown()
 {
 	FSlateStyleRegistry::UnRegisterSlateStyle(*StyleInstance);
 	ensure(StyleInstance.IsUnique());
 	StyleInstance.Reset();
 }
 
-FName FSlicingStyle::GetStyleSetName()
+FName FSlicingEditorStyle::GetStyleSetName()
 {
 	static FName StyleSetName(TEXT("SlicingStyle"));
 	return StyleSetName;
@@ -40,12 +40,13 @@ const FVector2D Icon16x16(16.0f, 16.0f);
 const FVector2D Icon20x20(20.0f, 20.0f);
 const FVector2D Icon40x40(40.0f, 40.0f);
 
-TSharedRef<FSlateStyleSet> FSlicingStyle::Create()
+TSharedRef<FSlateStyleSet> FSlicingEditorStyle::Create()
 {
 	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("SlicingStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("Slicing")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("Slicing.OpenPluginWindow", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
+	Style->Set("SlicingEditor.OpenPluginWindows", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
+	Style->Set("SlicingEditor.ShowSlicingElements", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
 
 	return Style;
 }
@@ -56,7 +57,7 @@ TSharedRef<FSlateStyleSet> FSlicingStyle::Create()
 #undef TTF_FONT
 #undef OTF_FONT
 
-void FSlicingStyle::ReloadTextures()
+void FSlicingEditorStyle::ReloadTextures()
 {
 	if (FSlateApplication::IsInitialized())
 	{
@@ -64,7 +65,7 @@ void FSlicingStyle::ReloadTextures()
 	}
 }
 
-const ISlateStyle& FSlicingStyle::Get()
+const ISlateStyle& FSlicingEditorStyle::Get()
 {
 	return *StyleInstance;
 }
