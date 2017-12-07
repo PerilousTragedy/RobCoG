@@ -19,7 +19,7 @@ void FSlicingPrototype::Debug(UPrimitiveComponent* InputBladeComponent)
 	{
 		DrawDebugSolidPlane(InputBladeComponent->GetWorld(), FPlane(2,2,2,0),
 			FVector(InputBladeComponent->GetComponentLocation()),
-			FVector2D(),
+			1.0f,
 			FColor::Red);
 	}
 
