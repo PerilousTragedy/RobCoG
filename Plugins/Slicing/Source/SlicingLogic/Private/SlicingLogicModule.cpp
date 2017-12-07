@@ -1,7 +1,6 @@
 ﻿// Copyright 2017, Institute for Artificial Intelligence
 
-#include "SlicingLogic.h"
-#include "LevelEditor.h"
+#include "SlicingLogicModule.h"
 #include "Engine/StaticMesh.h"
 #include "StaticMeshResources.h"
 #include "ProceduralMeshComponent.h"

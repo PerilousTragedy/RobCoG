@@ -1,6 +1,6 @@
 // Copyright 2017, Institute for Artificial Intelligence
 
-#include "SlicingEditor.h"
+#include "SlicingEditorModule.h"
 #include "SlicingEditorStyle.h"
 #include "SlicingEditorCommands.h"
 #include "LevelEditor.h"
