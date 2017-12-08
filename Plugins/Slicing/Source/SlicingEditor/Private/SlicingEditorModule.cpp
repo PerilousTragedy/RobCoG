@@ -8,12 +8,7 @@
 #include "Editor.h"
 #include "StaticMeshEditorModule.h"
 
-#include "Widgets/Docking/SDockTab.h"
-#include "Widgets/Layout/SBox.h"
-#include "Widgets/Text/STextBlock.h"
 #include "Framework/MultiBox/MultiBoxBuilder.h"
-
-static const FName SlicingTabName("Slicing");
 
 #define LOCTEXT_NAMESPACE "FSlicingEditorModule"
 
@@ -25,8 +20,24 @@ void FSlicingEditorModule::StartupModule()
 	FSlicingEditorStyle::Initialize();
 	FSlicingEditorStyle::ReloadTextures();
 
+	InitializeUIButtons();
+	AddUIButtons();
 
-	/** Initialize the UI buttons */
+	/** Rest */
+	StaticMeshEditorViewport = MakeShareable((SEditorViewport*)GEditor->GetActiveViewport());
+}
+
+// This function may be called during shutdown to clean up your module. For modules that support dynamic reloading,
+// we call this function before unloading the module.
+void FSlicingEditorModule::ShutdownModule()
+{
+	FSlicingEditorStyle::Shutdown();
+
+	FSlicingEditorCommands::Unregister();
+}
+
+void FSlicingEditorModule::InitializeUIButtons()
+{
 	FSlicingEditorCommands::Register();
 
 	PluginCommandList = MakeShareable(new FUICommandList);
@@ -34,7 +45,7 @@ void FSlicingEditorModule::StartupModule()
 
 	PluginCommandList->MapAction(
 		Commands.OpenPluginWindow,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::PluginButtonClicked),
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::ShowSlicingElements),
 		FCanExecuteAction());
 
 	PluginCommandList->MapAction(
@@ -49,12 +60,13 @@ void FSlicingEditorModule::StartupModule()
 		Commands.CreateCuttingExitpoint,
 		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::CreateCuttingExitpoint)
 	);
+}
 
-
-	/** Add the UI buttons to the editor */
+void FSlicingEditorModule::AddUIButtons()
+{
 	IStaticMeshEditorModule& StaticMeshEditorModule =
 		FModuleManager::Get().LoadModuleChecked<IStaticMeshEditorModule>("StaticMeshEditor");
-	
+
 	// Add menubar entry
 	TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
 	MenuExtender->AddMenuBarExtension(
@@ -74,71 +86,6 @@ void FSlicingEditorModule::StartupModule()
 		FToolBarExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddSlicingToolbar)
 	);
 	StaticMeshEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
-
-	/** STUFF */
-	StaticMeshEditorViewport = MakeShareable((SEditorViewport*)GEditor->GetActiveViewport());
-	//StaticMeshEditorViewport = SNew(SStaticMeshEditorViewport)
-	//	.StaticMeshEditor(SharedThis(this))
-	//	.ObjectToEdit(ObjectToEdit);
-
-
-	// Add menu entry
-	/*{
-		TSharedPtr<FExtender> MenuExtender = MakeShareable(new FExtender());
-		MenuExtender->AddMenuExtension("WindowLayout", EExtensionHook::After, PluginCommands, FMenuExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddMenuExtension));
-
-		LevelEditorModule.GetMenuExtensibilityManager()->AddExtender(MenuExtender);
-	}
-	
-	// Add toolbar entry
-	{
-		TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
-		ToolbarExtender->AddToolBarExtension("Settings", EExtensionHook::After, PluginCommands, FToolBarExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddToolbarExtension));
-		
-		LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
-	}*/
-	
-	FGlobalTabmanager::Get()->RegisterNomadTabSpawner(SlicingTabName, FOnSpawnTab::CreateRaw(this, &FSlicingEditorModule::OnSpawnPluginTab))
-		.SetDisplayName(LOCTEXT("FSlicingTabTitle", "Slicing"))
-		.SetMenuType(ETabSpawnerMenuType::Hidden);
-}
-
-// This function may be called during shutdown to clean up your module. For modules that support dynamic reloading,
-// we call this function before unloading the module.
-void FSlicingEditorModule::ShutdownModule()
-{
-	FSlicingEditorStyle::Shutdown();
-
-	FSlicingEditorCommands::Unregister();
-
-	FGlobalTabmanager::Get()->UnregisterNomadTabSpawner(SlicingTabName);
-}
-
-TSharedRef<SDockTab> FSlicingEditorModule::OnSpawnPluginTab(const FSpawnTabArgs& SpawnTabArgs)
-{
-	FText WidgetText = FText::Format(
-		LOCTEXT("WindowWidgetText", "Add code to {0} in {1} to override this window's contents"),
-		FText::FromString(TEXT("FSlicingEditorModule::OnSpawnPluginTab")),
-		FText::FromString(TEXT("Slicing.cpp"))
-		);
-
-	return SNew(SDockTab)
-		.TabRole(ETabRole::NomadTab)
-		[
-			// Put your tab content here!
-			SNew(SBox)
-			.HAlign(HAlign_Center)
-			.VAlign(VAlign_Center)
-			[
-				SNew(STextBlock)
-				.Text(WidgetText)
-			]
-		];
-}
-
-void FSlicingEditorModule::PluginButtonClicked()
-{
-	FGlobalTabmanager::Get()->InvokeTab(SlicingTabName);
 }
 
 void FSlicingEditorModule::CreateHandle()
@@ -158,6 +105,11 @@ void FSlicingEditorModule::CreateCuttingExitpoint()
 	UE_LOG(LogTemp, Warning, TEXT("CREATED CUTTING EXITPOINT"));
 }
 
+void FSlicingEditorModule::ShowSlicingElements()
+{
+	UE_LOG(LogTemp, Warning, TEXT("TOGGLED SLICING ELEMENTS SHOWN"));
+}
+
 static void CreateSlicingMenu(FMenuBuilder& Builder)
 {
 	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
@@ -174,11 +126,6 @@ static void CreateSlicingMenu(FMenuBuilder& Builder)
 void FSlicingEditorModule::RefreshViewport()
 {
 	StaticMeshEditorViewport->GetViewportClient()->Invalidate();
-}
-
-void FSlicingEditorModule::AddMenuExtension(FMenuBuilder& Builder)
-{
-	Builder.AddMenuEntry(FSlicingEditorCommands::Get().OpenPluginWindow);
 }
 
 void FSlicingEditorModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)
