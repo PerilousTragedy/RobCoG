@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "ModuleManager.h"
+#include "SEditorViewport.h"
 
 class FToolBarBuilder;
 class FMenuBuilder;
@@ -24,12 +25,15 @@ public:
 	void CreateCuttingExitpoint();
 	
 private:
+	TSharedPtr<class SEditorViewport> StaticMeshEditorViewport;
+	TSharedPtr<class FUICommandList> PluginCommandList;
+
+	// Refreshes the viewport to show newly created objects
+	void RefreshViewport();
 
 	void AddSlicingToolbar(FToolBarBuilder& Builder);
 	void AddMenuExtension(FMenuBuilder& Builder);
 	void AddSlicingMenuBar(FMenuBarBuilder& Builder);
 
 	TSharedRef<class SDockTab> OnSpawnPluginTab(const class FSpawnTabArgs& SpawnTabArgs);
-
-	TSharedPtr<class FUICommandList> PluginCommandList;
 };

@@ -3,8 +3,11 @@
 #include "SlicingEditorModule.h"
 #include "SlicingEditorStyle.h"
 #include "SlicingEditorCommands.h"
+
 #include "LevelEditor.h"
+#include "Editor.h"
 #include "StaticMeshEditorModule.h"
+
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/Layout/SBox.h"
 #include "Widgets/Text/STextBlock.h"
@@ -14,15 +17,18 @@ static const FName SlicingTabName("Slicing");
 
 #define LOCTEXT_NAMESPACE "FSlicingEditorModule"
 
+// This code will execute after your module is loaded into memory; the exact timing is specified in the
+// .uplugin file per-module
 void FSlicingEditorModule::StartupModule()
 {
-	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
-	
+	/** Initialize the appearance of the UI buttons */
 	FSlicingEditorStyle::Initialize();
 	FSlicingEditorStyle::ReloadTextures();
 
+
+	/** Initialize the UI buttons */
 	FSlicingEditorCommands::Register();
-	
+
 	PluginCommandList = MakeShareable(new FUICommandList);
 	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
 
@@ -43,7 +49,9 @@ void FSlicingEditorModule::StartupModule()
 		Commands.CreateCuttingExitpoint,
 		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::CreateCuttingExitpoint)
 	);
-		
+
+
+	/** Add the UI buttons to the editor */
 	IStaticMeshEditorModule& StaticMeshEditorModule =
 		FModuleManager::Get().LoadModuleChecked<IStaticMeshEditorModule>("StaticMeshEditor");
 	
@@ -67,6 +75,12 @@ void FSlicingEditorModule::StartupModule()
 	);
 	StaticMeshEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 
+	/** STUFF */
+	StaticMeshEditorViewport = MakeShareable((SEditorViewport*)GEditor->GetActiveViewport());
+	//StaticMeshEditorViewport = SNew(SStaticMeshEditorViewport)
+	//	.StaticMeshEditor(SharedThis(this))
+	//	.ObjectToEdit(ObjectToEdit);
+
 
 	// Add menu entry
 	/*{
@@ -89,10 +103,10 @@ void FSlicingEditorModule::StartupModule()
 		.SetMenuType(ETabSpawnerMenuType::Hidden);
 }
 
+// This function may be called during shutdown to clean up your module. For modules that support dynamic reloading,
+// we call this function before unloading the module.
 void FSlicingEditorModule::ShutdownModule()
 {
-	// This function may be called during shutdown to clean up your module.  For modules that support dynamic reloading,
-	// we call this function before unloading the module.
 	FSlicingEditorStyle::Shutdown();
 
 	FSlicingEditorCommands::Unregister();
@@ -130,6 +144,8 @@ void FSlicingEditorModule::PluginButtonClicked()
 void FSlicingEditorModule::CreateHandle()
 {
 	UE_LOG(LogTemp, Warning, TEXT("CREATED HANDLE"));
+
+	RefreshViewport();
 }
 
 void FSlicingEditorModule::CreateBlade()
@@ -155,6 +171,11 @@ static void CreateSlicingMenu(FMenuBuilder& Builder)
 	Builder.EndSection();
 }
 
+void FSlicingEditorModule::RefreshViewport()
+{
+	StaticMeshEditorViewport->GetViewportClient()->Invalidate();
+}
+
 void FSlicingEditorModule::AddMenuExtension(FMenuBuilder& Builder)
 {
 	Builder.AddMenuEntry(FSlicingEditorCommands::Get().OpenPluginWindow);
@@ -168,8 +189,6 @@ void FSlicingEditorModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)
 		FNewMenuDelegate::CreateStatic(CreateSlicingMenu),
 		"Slicing"
 	);
-	
-	//Builder.AddMenuEntry(FSlicingEditorCommands::Get().OpenPluginWindow);
 }
 
 void FSlicingEditorModule::AddSlicingToolbar(FToolBarBuilder& Builder)

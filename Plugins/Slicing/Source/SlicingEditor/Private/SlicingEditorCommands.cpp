@@ -6,6 +6,7 @@
 
 void FSlicingEditorCommands::RegisterCommands()
 {
+	// Register all the UI elements
 	UI_COMMAND(OpenPluginWindow,
 		"Slicing", "Bring up Slicing window", EUserInterfaceActionType::Button, FInputGesture());
 	UI_COMMAND(ShowSlicingElements, "Slicing",
