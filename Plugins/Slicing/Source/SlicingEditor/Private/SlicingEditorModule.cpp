@@ -24,7 +24,7 @@ void FSlicingEditorModule::StartupModule()
 	AddUIButtons();
 
 	/** Rest */
-	StaticMeshEditorViewport = MakeShareable((SEditorViewport*)GEditor->GetActiveViewport());
+//	StaticMeshEditorViewport = MakeShareable((SEditorViewport*)GEditor->GetActiveViewport());
 }
 
 // This function may be called during shutdown to clean up your module. For modules that support dynamic reloading,
@@ -125,7 +125,9 @@ static void CreateSlicingMenu(FMenuBuilder& Builder)
 
 void FSlicingEditorModule::RefreshViewport()
 {
-	StaticMeshEditorViewport->GetViewportClient()->Invalidate();
+	StaticMeshEditorViewport = MakeShareable((FViewport*)GEditor->GetActiveViewport());
+
+	StaticMeshEditorViewport->Invalidate();
 }
 
 void FSlicingEditorModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)

@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "ModuleManager.h"
 
-#include "SEditorViewport.h"
+//#include "FSceneViewport.h"
 
 class FToolBarBuilder;
 class FMenuBuilder;
+class FViewport;
 
 class FSlicingEditorModule: public IModuleInterface
 {
@@ -24,7 +25,7 @@ public:
 	void ShowSlicingElements();
 	
 private:
-	TSharedPtr<class SEditorViewport> StaticMeshEditorViewport;
+	TSharedPtr<class FViewport> StaticMeshEditorViewport;
 	TSharedPtr<class FUICommandList> PluginCommandList;
 
 	// Functions to differentiate the different initialization stages
