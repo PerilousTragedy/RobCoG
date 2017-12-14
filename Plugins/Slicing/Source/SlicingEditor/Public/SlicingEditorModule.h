@@ -23,6 +23,9 @@ public:
 	void CreateBlade();
 	void CreateCuttingExitpoint();
 	void ShowSlicingElements();
+	void EnableDebugConsoleOutput();
+	void EnableDebugShowPlane();
+	void EnableDebugShowTrajectory();
 
 	UObject * Mesh;
 	IAssetEditorInstance * Editore;
@@ -34,6 +37,7 @@ private:
 	// Functions to differentiate the different initialization stages
 	void InitializeUIButtons();
 	void AddUIButtons();
+	void CreateDebugButtons();
 
 	// Refreshes the viewport to show newly created objects
 	void RefreshViewport();
@@ -41,6 +45,9 @@ private:
 	// Handling Assets
 	void HandleAsset(UObject * Asset, IAssetEditorInstance *Editor);
 
-	void AddSlicingToolbar(FToolBarBuilder& Builder);
+	void CreateSlicingMenu(FMenuBuilder& Builder);
+	TSharedRef<SWidget> CreateDebugOptionMenu();
 	void AddSlicingMenuBar(FMenuBarBuilder& Builder);
+	void AddSlicingToolbar(FToolBarBuilder& Builder);
+	void AddDebugOptions(FToolBarBuilder& Builder);
 };

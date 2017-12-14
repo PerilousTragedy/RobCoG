@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "ModuleManager.h"
 
+#include "UObject/ObjectMacros.h"
+
 class FSlicingLogicModule: public IModuleInterface
 {
 public:

@@ -45,8 +45,8 @@ TSharedRef<FSlateStyleSet> FSlicingEditorStyle::Create()
 	TSharedRef<FSlateStyleSet> Style = MakeShareable(new FSlateStyleSet("SlicingStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("Slicing")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("SlicingEditor.OpenPluginWindows", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
 	Style->Set("SlicingEditor.ShowSlicingElements", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
+	Style->Set("SlicingEditor.DebugOptionToolBar", new IMAGE_BRUSH(TEXT("ButtonIcon_40x"), Icon40x40));
 
 	return Style;
 }

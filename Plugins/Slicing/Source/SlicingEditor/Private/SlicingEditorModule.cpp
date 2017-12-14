@@ -26,6 +26,7 @@ void FSlicingEditorModule::StartupModule()
 	
 	InitializeUIButtons();
 	AddUIButtons();
+	CreateDebugButtons();
 
 	FAssetEditorManager::Get().OnAssetOpenedInEditor().AddRaw(this, &FSlicingEditorModule::HandleAsset);
 	/** Rest */
@@ -47,17 +48,13 @@ void FSlicingEditorModule::ShutdownModule()
 	FSlicingEditorCommands::Unregister();
 }
 
+// Needed to create the menu-entries & buttons in the staticmesheditor
 void FSlicingEditorModule::InitializeUIButtons()
 {
 	FSlicingEditorCommands::Register();
 
 	PluginCommandList = MakeShareable(new FUICommandList);
 	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
-
-	PluginCommandList->MapAction(
-		Commands.OpenPluginWindow,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::ShowSlicingElements),
-		FCanExecuteAction());
 
 	PluginCommandList->MapAction(
 		Commands.CreateHandle,
@@ -71,8 +68,21 @@ void FSlicingEditorModule::InitializeUIButtons()
 		Commands.CreateCuttingExitpoint,
 		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::CreateCuttingExitpoint)
 	);
+
+	PluginCommandList->MapAction(
+		Commands.OpenPluginWindow,
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::ShowSlicingElements),
+		FCanExecuteAction()
+	);
+
+	PluginCommandList->MapAction(
+		Commands.EnableDebugConsoleOutput,
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::EnableDebugConsoleOutput),
+		FCanExecuteAction()
+	);
 }
 
+// Adds the neccessary menu-entries & buttons to the staticmesheditor to configure slicable objects
 void FSlicingEditorModule::AddUIButtons()
 {
 	IStaticMeshEditorModule& StaticMeshEditorModule =
@@ -97,6 +107,21 @@ void FSlicingEditorModule::AddUIButtons()
 		FToolBarExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddSlicingToolbar)
 	);
 	StaticMeshEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
+}
+
+// Creates the buttons to enable debug options in the level editor toolbar
+void FSlicingEditorModule::CreateDebugButtons()
+{
+	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
+
+	TSharedPtr<FExtender> ToolbarExtender = MakeShareable(new FExtender);
+	ToolbarExtender->AddToolBarExtension(
+		"Settings",
+		EExtensionHook::After,
+		PluginCommandList,
+		FToolBarExtensionDelegate::CreateRaw(this, &FSlicingEditorModule::AddDebugOptions)
+	);
+	LevelEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 }
 
 void FSlicingEditorModule::CreateHandle()
@@ -138,7 +163,29 @@ void FSlicingEditorModule::ShowSlicingElements()
 	UE_LOG(LogTemp, Warning, TEXT("TOGGLED SLICING ELEMENTS SHOWN"));
 }
 
-static void CreateSlicingMenu(FMenuBuilder& Builder)
+void FSlicingEditorModule::EnableDebugConsoleOutput()
+{
+	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG CONSOLE OUTPUT"));
+}
+
+void FSlicingEditorModule::EnableDebugShowPlane()
+{
+	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG SHOWING SLICING PLANE"));
+}
+
+void FSlicingEditorModule::EnableDebugShowTrajectory()
+{
+	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG SHOWING SLICING TRAJECTORY"));
+}
+
+void FSlicingEditorModule::RefreshViewport()
+{
+	StaticMeshEditorViewport = MakeShareable((FViewport*)GEditor->GetActiveViewport());
+
+	StaticMeshEditorViewport->Invalidate();
+}
+
+void FSlicingEditorModule::CreateSlicingMenu(FMenuBuilder& Builder)
 {
 	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
 	
@@ -151,11 +198,20 @@ static void CreateSlicingMenu(FMenuBuilder& Builder)
 	Builder.EndSection();
 }
 
-void FSlicingEditorModule::RefreshViewport()
+TSharedRef<SWidget> FSlicingEditorModule::CreateDebugOptionMenu()
 {
-	StaticMeshEditorViewport = MakeShareable((FViewport*)GEditor->GetActiveViewport());
+	FMenuBuilder Builder(true, PluginCommandList.ToSharedRef());
 
-	StaticMeshEditorViewport->Invalidate();
+	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
+	Builder.BeginSection("SlicingDebugOptions");
+	{
+		Builder.AddMenuEntry(Commands.EnableDebugConsoleOutput);
+		Builder.AddMenuEntry(Commands.EnableDebugShowPlane);
+		Builder.AddMenuEntry(Commands.EnableDebugShowTrajectory);
+	}
+	Builder.EndSection();
+
+	return Builder.MakeWidget();
 }
 
 void FSlicingEditorModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)
@@ -163,14 +219,28 @@ void FSlicingEditorModule::AddSlicingMenuBar(FMenuBarBuilder& Builder)
 	Builder.AddPullDownMenu(
 		LOCTEXT("SlicingPluginMenu", "Slicing"),
 		LOCTEXT("SlicingPluginMenu_ToolTip", "Opens a menu with commands for creating the elements needed to make the static mesh be able to slice."),
-		FNewMenuDelegate::CreateStatic(CreateSlicingMenu),
+		FNewMenuDelegate::CreateRaw(this, &FSlicingEditorModule::CreateSlicingMenu),
 		"Slicing"
 	);
 }
 
 void FSlicingEditorModule::AddSlicingToolbar(FToolBarBuilder& Builder)
 {
-	Builder.AddToolBarButton(FSlicingEditorCommands::Get().OpenPluginWindow);
+	Builder.AddToolBarButton(FSlicingEditorCommands::Get().ShowSlicingElements);
+}
+
+void FSlicingEditorModule::AddDebugOptions(FToolBarBuilder& Builder)
+{
+	FSlicingEditorCommands SlicingEditorCommands;
+	
+	Builder.AddComboButton(
+		FUIAction(),
+		FOnGetContent::CreateRaw(this, &FSlicingEditorModule::CreateDebugOptionMenu),
+		LOCTEXT("SlicingDebugToolbar", "Slicing"),
+		LOCTEXT("SlicingDebugToolbar_ToolTip", "Slicing plugin debug options"),
+		FSlateIcon(FSlicingEditorStyle::GetStyleSetName(), "SlicingEditor.DebugOptionToolBar"),
+		false
+	);
 }
 
 #undef LOCTEXT_NAMESPACE

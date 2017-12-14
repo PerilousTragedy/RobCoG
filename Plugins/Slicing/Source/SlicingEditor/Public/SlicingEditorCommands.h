@@ -20,8 +20,11 @@ public:
 	virtual void RegisterCommands() override;
 
 	TSharedPtr<FUICommandInfo> OpenPluginWindow;
-	TSharedPtr<FUICommandInfo> ShowSlicingElements;
 	TSharedPtr<FUICommandInfo> CreateHandle;
 	TSharedPtr<FUICommandInfo> CreateBlade;
 	TSharedPtr<FUICommandInfo> CreateCuttingExitpoint;
+	TSharedPtr<FUICommandInfo> ShowSlicingElements;
+	TSharedPtr<FUICommandInfo> EnableDebugConsoleOutput;
+	TSharedPtr<FUICommandInfo> EnableDebugShowPlane;
+	TSharedPtr<FUICommandInfo> EnableDebugShowTrajectory;
 };
