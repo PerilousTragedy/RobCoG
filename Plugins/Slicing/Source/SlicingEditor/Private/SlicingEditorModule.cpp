@@ -115,8 +115,9 @@ void FSlicingEditorModule::CreateHandle()
 
 		UStaticMeshSocket* Sock = NewObject<UStaticMeshSocket>();
 		Sock->SocketName = FName("Handle - Test");
-
-		WorkingStaticMesh->Sockets.Add(Sock);
+		WorkingStaticMesh->Sockets.Emplace(Sock);
+		Tempy->SetSelectedSocket(Sock);
+		
 	}
 	
 	//RefreshViewport();
