@@ -14,18 +14,28 @@ class FViewport;
 class FSlicingEditorModule: public IModuleInterface
 {
 public:
-
 	/** IModuleInterface implementation */
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+	/** Debug option booleans to be read  */
+	bool bEnableDebugConsoleOutput = true;
+	bool bEnableDebugShowPlane = false;
+	bool bEnableDebugShowTrajectory = false;
+
+	/** Slicing editor actions */
+	// Static mesh editor
 	void CreateHandle();
 	void CreateBlade();
 	void CreateCuttingExitpoint();
 	void ShowSlicingElements();
-	void EnableDebugConsoleOutput();
-	void EnableDebugShowPlane();
-	void EnableDebugShowTrajectory();
+	// Level editor debug options
+	void OnEnableDebugConsoleOutput();
+	bool OnIsEnableDebugConsoleOutputEnabled();
+	void OnEnableDebugShowPlane();
+	bool OnIsEnableDebugShowPlaneEnabled();
+	void OnEnableDebugShowTrajectory();
+	bool OnIsEnableDebugShowTrajectoryEnabled();
 
 	UObject * Mesh;
 	IAssetEditorInstance * Editore;
@@ -34,7 +44,7 @@ private:
 	TSharedPtr<class FViewport> StaticMeshEditorViewport;
 	TSharedPtr<class FUICommandList> PluginCommandList;
 
-	// Functions to differentiate the different initialization stages
+	/** Creating the UI elements */
 	void InitializeUIButtons();
 	void AddUIButtons();
 	void CreateDebugButtons();
@@ -45,6 +55,7 @@ private:
 	// Handling Assets
 	void HandleAsset(UObject * Asset, IAssetEditorInstance *Editor);
 
+	/** Needed to build the UI elements */
 	void CreateSlicingMenu(FMenuBuilder& Builder);
 	TSharedRef<SWidget> CreateDebugOptionMenu();
 	void AddSlicingMenuBar(FMenuBarBuilder& Builder);

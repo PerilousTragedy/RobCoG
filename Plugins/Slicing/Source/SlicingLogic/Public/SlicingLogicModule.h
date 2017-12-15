@@ -25,6 +25,7 @@ public:
 	void SetMaterialForSection(UMaterialInterface* InputTexture);
 
 private:
+	void TestingThisShit();
 
 	UMaterialInterface* MaterialReferenceNewSection = NULL;
 

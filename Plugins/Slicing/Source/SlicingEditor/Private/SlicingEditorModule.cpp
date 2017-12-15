@@ -70,15 +70,28 @@ void FSlicingEditorModule::InitializeUIButtons()
 	);
 
 	PluginCommandList->MapAction(
-		Commands.OpenPluginWindow,
+		Commands.ShowSlicingElements,
 		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::ShowSlicingElements),
 		FCanExecuteAction()
 	);
 
 	PluginCommandList->MapAction(
 		Commands.EnableDebugConsoleOutput,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::EnableDebugConsoleOutput),
-		FCanExecuteAction()
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::OnEnableDebugConsoleOutput),
+		FCanExecuteAction(),
+		FIsActionChecked::CreateRaw(this, &FSlicingEditorModule::OnIsEnableDebugConsoleOutputEnabled)
+	);
+	PluginCommandList->MapAction(
+		Commands.EnableDebugShowPlane,
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::OnEnableDebugShowPlane),
+		FCanExecuteAction(),
+		FIsActionChecked::CreateRaw(this, &FSlicingEditorModule::OnIsEnableDebugShowPlaneEnabled)
+	);
+	PluginCommandList->MapAction(
+		Commands.EnableDebugShowTrajectory,
+		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::OnEnableDebugShowTrajectory),
+		FCanExecuteAction(),
+		FIsActionChecked::CreateRaw(this, &FSlicingEditorModule::OnIsEnableDebugShowTrajectoryEnabled)
 	);
 }
 
@@ -163,19 +176,40 @@ void FSlicingEditorModule::ShowSlicingElements()
 	UE_LOG(LogTemp, Warning, TEXT("TOGGLED SLICING ELEMENTS SHOWN"));
 }
 
-void FSlicingEditorModule::EnableDebugConsoleOutput()
+void FSlicingEditorModule::OnEnableDebugConsoleOutput()
 {
 	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG CONSOLE OUTPUT"));
+
+	bEnableDebugConsoleOutput = !bEnableDebugConsoleOutput;
 }
 
-void FSlicingEditorModule::EnableDebugShowPlane()
+bool FSlicingEditorModule::OnIsEnableDebugConsoleOutputEnabled()
+{
+	return bEnableDebugConsoleOutput == true;
+}
+
+void FSlicingEditorModule::OnEnableDebugShowPlane()
 {
 	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG SHOWING SLICING PLANE"));
+
+	bEnableDebugShowPlane = !bEnableDebugShowPlane;
 }
 
-void FSlicingEditorModule::EnableDebugShowTrajectory()
+bool FSlicingEditorModule::OnIsEnableDebugShowPlaneEnabled()
+{
+	return bEnableDebugShowPlane == true;
+}
+
+void FSlicingEditorModule::OnEnableDebugShowTrajectory()
 {
 	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG SHOWING SLICING TRAJECTORY"));
+
+	bEnableDebugShowTrajectory = !bEnableDebugShowTrajectory;
+}
+
+bool FSlicingEditorModule::OnIsEnableDebugShowTrajectoryEnabled()
+{
+	return bEnableDebugShowTrajectory == true;
 }
 
 void FSlicingEditorModule::RefreshViewport()
@@ -200,7 +234,7 @@ void FSlicingEditorModule::CreateSlicingMenu(FMenuBuilder& Builder)
 
 TSharedRef<SWidget> FSlicingEditorModule::CreateDebugOptionMenu()
 {
-	FMenuBuilder Builder(true, PluginCommandList.ToSharedRef());
+	FMenuBuilder Builder(false, PluginCommandList.ToSharedRef());
 
 	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
 	Builder.BeginSection("SlicingDebugOptions");

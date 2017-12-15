@@ -1,10 +1,13 @@
 ﻿// Copyright 2017, Institute for Artificial Intelligence
 
 #include "SlicingLogicModule.h"
+#include "SlicingEditorModule.h"
+
 #include "Engine/StaticMesh.h"
 #include "StaticMeshResources.h"
 #include "ProceduralMeshComponent.h"
 #include "KismetProceduralMeshLibrary.h"
+
 #include "DrawDebugHelpers.h"
 
 #define LOCTEXT_NAMESPACE "FSlicingLogicModule"
@@ -12,6 +15,7 @@
 void FSlicingLogicModule::StartupModule()
 {
 	// Empty as of right now
+	FSlicingLogicModule::TestingThisShit();
 }
 
 void FSlicingLogicModule::ShutdownModule()
@@ -19,15 +23,33 @@ void FSlicingLogicModule::ShutdownModule()
 	// Empty as of right now
 }
 
+void FSlicingLogicModule::TestingThisShit()
+{
+	FSlicingEditorModule& SlicingEditorModule =
+		FModuleManager::Get().LoadModuleChecked<FSlicingEditorModule>("SlicingEditor");
+
+	if (SlicingEditorModule.bEnableDebugConsoleOutput)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BOOLEAN COULD BE READ [TRUE]"));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("BOOLEAN COULD BE READ [FALSE]"));
+	}
+}
+
 // InputComponent being the blade to debug.
 void FSlicingLogicModule::Debug(UPrimitiveComponent* InputBladeComponent)
 {
-	if (bDebugPrintText)
+	FSlicingEditorModule& SlicingEditorModule =
+		FModuleManager::Get().LoadModuleChecked<FSlicingEditorModule>("SlicingEditor");
+	
+	if (SlicingEditorModule.bEnableDebugConsoleOutput)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Debug: == Pending =="));
 	}
 
-	if (bDebugShowPlane)
+	if (false) //FSlicingEditorModule::bEnableDebugShowPlane
 	{
 		DrawDebugSolidPlane(InputBladeComponent->GetWorld(), FPlane(2,2,2,0),
 			FVector(InputBladeComponent->GetComponentLocation()),
@@ -36,7 +58,7 @@ void FSlicingLogicModule::Debug(UPrimitiveComponent* InputBladeComponent)
 	}
 
 	// TODO
-	if (bDebugShowWay)
+	if (false) //FSlicingEditorModule::bEnableDebugShowTrajectory
 	{
 
 	}
