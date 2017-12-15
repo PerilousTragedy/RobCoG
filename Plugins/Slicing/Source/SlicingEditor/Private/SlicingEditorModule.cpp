@@ -6,7 +6,11 @@
 
 #include "LevelEditor.h"
 #include "Editor.h"
+#include "IStaticMeshEditor.h"
+#include "StaticMeshEditorActions.h"
 #include "StaticMeshEditorModule.h"
+
+#include "Engine.h"
 
 #include "Framework/MultiBox/MultiBoxBuilder.h"
 
@@ -19,12 +23,19 @@ void FSlicingEditorModule::StartupModule()
 	/** Initialize the appearance of the UI buttons */
 	FSlicingEditorStyle::Initialize();
 	FSlicingEditorStyle::ReloadTextures();
-
+	
 	InitializeUIButtons();
 	AddUIButtons();
 
+	FAssetEditorManager::Get().OnAssetOpenedInEditor().AddRaw(this, &FSlicingEditorModule::HandleAsset);
 	/** Rest */
 //	StaticMeshEditorViewport = MakeShareable((SEditorViewport*)GEditor->GetActiveViewport());
+}
+
+void FSlicingEditorModule::HandleAsset(UObject * Asset, IAssetEditorInstance *Editor)
+{
+	Mesh = Asset;
+	Editore = Editor;
 }
 
 // This function may be called during shutdown to clean up your module. For modules that support dynamic reloading,
@@ -91,8 +102,24 @@ void FSlicingEditorModule::AddUIButtons()
 void FSlicingEditorModule::CreateHandle()
 {
 	UE_LOG(LogTemp, Warning, TEXT("CREATED HANDLE"));
+	UBoxComponent* Handle = NewObject<UBoxComponent>();
+	Handle->RegisterComponent();
 
-	RefreshViewport();
+	if (!Mesh)
+		return;
+
+	check(Editore->GetEditorName() == "StaticMeshEditor");
+	auto * Tempy =  StaticCast<IStaticMeshEditor *>(Editore);
+	{
+		UStaticMesh* WorkingStaticMesh = Tempy->GetStaticMesh();
+
+		UStaticMeshSocket* Sock = NewObject<UStaticMeshSocket>();
+		Sock->SocketName = FName("Handle - Test");
+
+		WorkingStaticMesh->Sockets.Add(Sock);
+	}
+	
+	//RefreshViewport();
 }
 
 void FSlicingEditorModule::CreateBlade()

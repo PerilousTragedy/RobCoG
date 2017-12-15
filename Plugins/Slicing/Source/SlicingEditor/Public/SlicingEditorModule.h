@@ -23,6 +23,9 @@ public:
 	void CreateBlade();
 	void CreateCuttingExitpoint();
 	void ShowSlicingElements();
+
+	UObject * Mesh;
+	IAssetEditorInstance * Editore;
 	
 private:
 	TSharedPtr<class FViewport> StaticMeshEditorViewport;
@@ -34,6 +37,9 @@ private:
 
 	// Refreshes the viewport to show newly created objects
 	void RefreshViewport();
+	
+	// Handling Assets
+	void HandleAsset(UObject * Asset, IAssetEditorInstance *Editor);
 
 	void AddSlicingToolbar(FToolBarBuilder& Builder);
 	void AddSlicingMenuBar(FMenuBarBuilder& Builder);
