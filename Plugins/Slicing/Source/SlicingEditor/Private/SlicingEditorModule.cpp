@@ -3,6 +3,7 @@
 #include "SlicingEditorModule.h"
 #include "SlicingEditorStyle.h"
 #include "SlicingEditorCommands.h"
+#include "SlicingEditorActionCallbacks.h"
 
 #include "LevelEditor.h"
 #include "Editor.h"
@@ -62,36 +63,36 @@ void FSlicingEditorModule::InitializeUIButtons()
 	);
 	PluginCommandList->MapAction(
 		Commands.CreateBlade,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::CreateBlade)
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::CreateBlade)
 	);
 	PluginCommandList->MapAction(
 		Commands.CreateCuttingExitpoint,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::CreateCuttingExitpoint)
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::CreateCuttingExitpoint)
 	);
 
 	PluginCommandList->MapAction(
 		Commands.ShowSlicingElements,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::ShowSlicingElements),
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::ShowSlicingElements),
 		FCanExecuteAction()
 	);
 
 	PluginCommandList->MapAction(
 		Commands.EnableDebugConsoleOutput,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::OnEnableDebugConsoleOutput),
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugConsoleOutput, &bEnableDebugConsoleOutput),
 		FCanExecuteAction(),
-		FIsActionChecked::CreateRaw(this, &FSlicingEditorModule::OnIsEnableDebugConsoleOutputEnabled)
+		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugConsoleOutputEnabled, &bEnableDebugConsoleOutput)
 	);
 	PluginCommandList->MapAction(
 		Commands.EnableDebugShowPlane,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::OnEnableDebugShowPlane),
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugShowPlane, &bEnableDebugShowPlane),
 		FCanExecuteAction(),
-		FIsActionChecked::CreateRaw(this, &FSlicingEditorModule::OnIsEnableDebugShowPlaneEnabled)
+		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugShowPlaneEnabled, &bEnableDebugShowPlane)
 	);
 	PluginCommandList->MapAction(
 		Commands.EnableDebugShowTrajectory,
-		FExecuteAction::CreateRaw(this, &FSlicingEditorModule::OnEnableDebugShowTrajectory),
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugShowTrajectory, &bEnableDebugShowTrajectory),
 		FCanExecuteAction(),
-		FIsActionChecked::CreateRaw(this, &FSlicingEditorModule::OnIsEnableDebugShowTrajectoryEnabled)
+		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugShowTrajectoryEnabled, &bEnableDebugShowTrajectory)
 	);
 }
 
@@ -147,7 +148,7 @@ void FSlicingEditorModule::CreateHandle()
 		return;
 
 	check(Editore->GetEditorName() == "StaticMeshEditor");
-	auto * Tempy =  StaticCast<IStaticMeshEditor *>(Editore);
+	auto * Tempy = StaticCast<IStaticMeshEditor *>(Editore);
 	{
 		UStaticMesh* WorkingStaticMesh = Tempy->GetStaticMesh();
 
@@ -155,61 +156,10 @@ void FSlicingEditorModule::CreateHandle()
 		Sock->SocketName = FName("Handle - Test");
 		WorkingStaticMesh->Sockets.Emplace(Sock);
 		Tempy->SetSelectedSocket(Sock);
-		
+
 	}
-	
+
 	//RefreshViewport();
-}
-
-void FSlicingEditorModule::CreateBlade()
-{
-	UE_LOG(LogTemp, Warning, TEXT("CREATED BLADE"));
-}
-
-void FSlicingEditorModule::CreateCuttingExitpoint()
-{
-	UE_LOG(LogTemp, Warning, TEXT("CREATED CUTTING EXITPOINT"));
-}
-
-void FSlicingEditorModule::ShowSlicingElements()
-{
-	UE_LOG(LogTemp, Warning, TEXT("TOGGLED SLICING ELEMENTS SHOWN"));
-}
-
-void FSlicingEditorModule::OnEnableDebugConsoleOutput()
-{
-	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG CONSOLE OUTPUT"));
-
-	bEnableDebugConsoleOutput = !bEnableDebugConsoleOutput;
-}
-
-bool FSlicingEditorModule::OnIsEnableDebugConsoleOutputEnabled()
-{
-	return bEnableDebugConsoleOutput == true;
-}
-
-void FSlicingEditorModule::OnEnableDebugShowPlane()
-{
-	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG SHOWING SLICING PLANE"));
-
-	bEnableDebugShowPlane = !bEnableDebugShowPlane;
-}
-
-bool FSlicingEditorModule::OnIsEnableDebugShowPlaneEnabled()
-{
-	return bEnableDebugShowPlane == true;
-}
-
-void FSlicingEditorModule::OnEnableDebugShowTrajectory()
-{
-	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG SHOWING SLICING TRAJECTORY"));
-
-	bEnableDebugShowTrajectory = !bEnableDebugShowTrajectory;
-}
-
-bool FSlicingEditorModule::OnIsEnableDebugShowTrajectoryEnabled()
-{
-	return bEnableDebugShowTrajectory == true;
 }
 
 void FSlicingEditorModule::RefreshViewport()

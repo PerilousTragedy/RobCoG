@@ -23,19 +23,8 @@ public:
 	bool bEnableDebugShowPlane = false;
 	bool bEnableDebugShowTrajectory = false;
 
-	/** Slicing editor actions */
-	// Static mesh editor
+	// Leftover from SlicingEditorActionCallbacks to be moved later
 	void CreateHandle();
-	void CreateBlade();
-	void CreateCuttingExitpoint();
-	void ShowSlicingElements();
-	// Level editor debug options
-	void OnEnableDebugConsoleOutput();
-	bool OnIsEnableDebugConsoleOutputEnabled();
-	void OnEnableDebugShowPlane();
-	bool OnIsEnableDebugShowPlaneEnabled();
-	void OnEnableDebugShowTrajectory();
-	bool OnIsEnableDebugShowTrajectoryEnabled();
 
 	UObject * Mesh;
 	IAssetEditorInstance * Editore;
