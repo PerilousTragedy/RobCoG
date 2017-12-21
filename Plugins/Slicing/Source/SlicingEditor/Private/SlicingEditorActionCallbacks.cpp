@@ -1,10 +1,12 @@
+// Copyright 2017, Institute for Artificial Intelligence
+
 #include "SlicingEditorActionCallbacks.h"
 
 #include "IStaticMeshEditor.h"
 #include "StaticMeshEditorActions.h"
 #include "StaticMeshEditorModule.h"
 
-#include "Engine.h"
+#define LOCTEXT_NAMESPACE "FSlicingEditorModule"
 
 void FSlicingEditorActionCallbacks::CreateBlade()
 {
@@ -23,36 +25,32 @@ void FSlicingEditorActionCallbacks::ShowSlicingElements()
 
 void FSlicingEditorActionCallbacks::OnEnableDebugConsoleOutput(bool* bButtonValue)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG CONSOLE OUTPUT"));
-
 	*bButtonValue = !*bButtonValue;
 }
 
 bool FSlicingEditorActionCallbacks::OnIsEnableDebugConsoleOutputEnabled(bool* bButtonValue)
 {
-	return *bButtonValue == true;
+	return *bButtonValue;
 }
 
 void FSlicingEditorActionCallbacks::OnEnableDebugShowPlane(bool* bButtonValue)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG SHOWING SLICING PLANE"));
-
 	*bButtonValue = !*bButtonValue;
 }
 
 bool FSlicingEditorActionCallbacks::OnIsEnableDebugShowPlaneEnabled(bool* bButtonValue)
 {
-	return *bButtonValue == true;
+	return *bButtonValue;
 }
 
 void FSlicingEditorActionCallbacks::OnEnableDebugShowTrajectory(bool* bButtonValue)
 {
-	UE_LOG(LogTemp, Warning, TEXT("TOGGLED DEBUG SHOWING SLICING TRAJECTORY"));
-
 	*bButtonValue = !*bButtonValue;
 }
 
 bool FSlicingEditorActionCallbacks::OnIsEnableDebugShowTrajectoryEnabled(bool* bButtonValue)
 {
-	return *bButtonValue == true;
+	return *bButtonValue;
 }
+
+#undef LOCTEXT_NAMESPACE

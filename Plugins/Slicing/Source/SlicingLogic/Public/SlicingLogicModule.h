@@ -15,6 +15,11 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
+	/** Debug option booleans to be read  */
+	bool bEnableDebugConsoleOutput = true;
+	bool bEnableDebugShowPlane = false;
+	bool bEnableDebugShowTrajectory = false;
+
 	// 0 = CreateNewSectionForCap (default), 1 = No Cap, 2 = UseLastSectionForCap
 	int NewSectionOptions = 0;
 

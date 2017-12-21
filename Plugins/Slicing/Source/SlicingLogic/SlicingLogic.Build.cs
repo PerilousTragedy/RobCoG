@@ -28,8 +28,7 @@ public class SlicingLogic: ModuleRules
 			new string[]
 			{
 				"Core",
-                "ProceduralMeshComponent",
-                "SlicingEditor"
+                "ProceduralMeshComponent"
 			}
 		);
 

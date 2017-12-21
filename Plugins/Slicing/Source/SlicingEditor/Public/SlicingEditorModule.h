@@ -18,11 +18,6 @@ public:
 	virtual void StartupModule() override;
 	virtual void ShutdownModule() override;
 
-	/** Debug option booleans to be read  */
-	bool bEnableDebugConsoleOutput = true;
-	bool bEnableDebugShowPlane = false;
-	bool bEnableDebugShowTrajectory = false;
-
 	// Leftover from SlicingEditorActionCallbacks to be moved later
 	void CreateHandle();
 

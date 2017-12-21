@@ -4,6 +4,7 @@
 #include "SlicingEditorStyle.h"
 #include "SlicingEditorCommands.h"
 #include "SlicingEditorActionCallbacks.h"
+#include "SlicingLogicModule.h"
 
 #include "LevelEditor.h"
 #include "Editor.h"
@@ -17,7 +18,7 @@
 
 #define LOCTEXT_NAMESPACE "FSlicingEditorModule"
 
-// This code will execute after your module is loaded into memory; the exact timing is specified in the
+//* This code will execute after your module is loaded into memory; the exact timing is specified in the
 // .uplugin file per-module
 void FSlicingEditorModule::StartupModule()
 {
@@ -30,8 +31,6 @@ void FSlicingEditorModule::StartupModule()
 	CreateDebugButtons();
 
 	FAssetEditorManager::Get().OnAssetOpenedInEditor().AddRaw(this, &FSlicingEditorModule::HandleAsset);
-	/** Rest */
-//	StaticMeshEditorViewport = MakeShareable((SEditorViewport*)GEditor->GetActiveViewport());
 }
 
 void FSlicingEditorModule::HandleAsset(UObject * Asset, IAssetEditorInstance *Editor)
@@ -40,8 +39,7 @@ void FSlicingEditorModule::HandleAsset(UObject * Asset, IAssetEditorInstance *Ed
 	Editore = Editor;
 }
 
-// This function may be called during shutdown to clean up your module. For modules that support dynamic reloading,
-// we call this function before unloading the module.
+//* This function may be called during shutdown to clean up the module.
 void FSlicingEditorModule::ShutdownModule()
 {
 	FSlicingEditorStyle::Shutdown();
@@ -49,7 +47,7 @@ void FSlicingEditorModule::ShutdownModule()
 	FSlicingEditorCommands::Unregister();
 }
 
-// Needed to create the menu-entries & buttons in the staticmesheditor
+//* Creates the menu-entries & buttons in the staticmesheditor
 void FSlicingEditorModule::InitializeUIButtons()
 {
 	FSlicingEditorCommands::Register();
@@ -76,27 +74,31 @@ void FSlicingEditorModule::InitializeUIButtons()
 		FCanExecuteAction()
 	);
 
+	//* Needed for the debug option booleans
+	FSlicingLogicModule& SlicingLogicModule =
+		FModuleManager::Get().LoadModuleChecked<FSlicingLogicModule>("SlicingLogic");
+
 	PluginCommandList->MapAction(
 		Commands.EnableDebugConsoleOutput,
-		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugConsoleOutput, &bEnableDebugConsoleOutput),
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugConsoleOutput, &SlicingLogicModule.bEnableDebugConsoleOutput),
 		FCanExecuteAction(),
-		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugConsoleOutputEnabled, &bEnableDebugConsoleOutput)
+		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugConsoleOutputEnabled, &SlicingLogicModule.bEnableDebugConsoleOutput)
 	);
 	PluginCommandList->MapAction(
 		Commands.EnableDebugShowPlane,
-		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugShowPlane, &bEnableDebugShowPlane),
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugShowPlane, &SlicingLogicModule.bEnableDebugShowPlane),
 		FCanExecuteAction(),
-		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugShowPlaneEnabled, &bEnableDebugShowPlane)
+		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugShowPlaneEnabled, &SlicingLogicModule.bEnableDebugShowPlane)
 	);
 	PluginCommandList->MapAction(
 		Commands.EnableDebugShowTrajectory,
-		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugShowTrajectory, &bEnableDebugShowTrajectory),
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::OnEnableDebugShowTrajectory, &SlicingLogicModule.bEnableDebugShowTrajectory),
 		FCanExecuteAction(),
-		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugShowTrajectoryEnabled, &bEnableDebugShowTrajectory)
+		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugShowTrajectoryEnabled, &SlicingLogicModule.bEnableDebugShowTrajectory)
 	);
 }
 
-// Adds the neccessary menu-entries & buttons to the staticmesheditor to configure slicable objects
+//* Adds the neccessary menu-entries & buttons to the staticmesheditor to configure slicable objects
 void FSlicingEditorModule::AddUIButtons()
 {
 	IStaticMeshEditorModule& StaticMeshEditorModule =
@@ -123,7 +125,7 @@ void FSlicingEditorModule::AddUIButtons()
 	StaticMeshEditorModule.GetToolBarExtensibilityManager()->AddExtender(ToolbarExtender);
 }
 
-// Creates the buttons to enable debug options in the level editor toolbar
+//* Creates the buttons to enable debug options in the level editor toolbar
 void FSlicingEditorModule::CreateDebugButtons()
 {
 	FLevelEditorModule& LevelEditorModule = FModuleManager::LoadModuleChecked<FLevelEditorModule>("LevelEditor");
@@ -162,6 +164,7 @@ void FSlicingEditorModule::CreateHandle()
 	//RefreshViewport();
 }
 
+//* Refreshes the viewport so that newly added objects are shown immediately
 void FSlicingEditorModule::RefreshViewport()
 {
 	StaticMeshEditorViewport = MakeShareable((FViewport*)GEditor->GetActiveViewport());
@@ -169,6 +172,7 @@ void FSlicingEditorModule::RefreshViewport()
 	StaticMeshEditorViewport->Invalidate();
 }
 
+//* Creates the menu-entries for the dropdown-menu of the slicing menubar
 void FSlicingEditorModule::CreateSlicingMenu(FMenuBuilder& Builder)
 {
 	const FSlicingEditorCommands& Commands = FSlicingEditorCommands::Get();
@@ -182,6 +186,7 @@ void FSlicingEditorModule::CreateSlicingMenu(FMenuBuilder& Builder)
 	Builder.EndSection();
 }
 
+//* Creates the menu-entries for the dropdown-menu of the slicing toolbar menu
 TSharedRef<SWidget> FSlicingEditorModule::CreateDebugOptionMenu()
 {
 	FMenuBuilder Builder(false, PluginCommandList.ToSharedRef());

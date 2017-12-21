@@ -28,7 +28,8 @@ public class SlicingEditor: ModuleRules
 			new string[]
 			{
 				"Core",
-                "StaticMeshEditor"
+                "StaticMeshEditor",
+                "SlicingLogic"
 			}
 		);
 

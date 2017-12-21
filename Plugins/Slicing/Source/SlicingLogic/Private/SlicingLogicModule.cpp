@@ -1,7 +1,6 @@
 ﻿// Copyright 2017, Institute for Artificial Intelligence
 
 #include "SlicingLogicModule.h"
-#include "SlicingEditorModule.h"
 
 #include "Engine/StaticMesh.h"
 #include "StaticMeshResources.h"
@@ -14,7 +13,6 @@
 
 void FSlicingLogicModule::StartupModule()
 {
-	// Empty as of right now
 	FSlicingLogicModule::TestingThisShit();
 }
 
@@ -25,26 +23,20 @@ void FSlicingLogicModule::ShutdownModule()
 
 void FSlicingLogicModule::TestingThisShit()
 {
-	FSlicingEditorModule& SlicingEditorModule =
-		FModuleManager::Get().LoadModuleChecked<FSlicingEditorModule>("SlicingEditor");
-
-	if (SlicingEditorModule.bEnableDebugConsoleOutput)
+	if (bEnableDebugConsoleOutput)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BOOLEAN COULD BE READ [TRUE]"));
+		UE_LOG(LogTemp, Warning, TEXT("BOOLEAN WAS READ [TRUE]"));
 	}
 	else
 	{
-		UE_LOG(LogTemp, Warning, TEXT("BOOLEAN COULD BE READ [FALSE]"));
+		UE_LOG(LogTemp, Warning, TEXT("BOOLEAN WAS READ [FALSE]"));
 	}
 }
 
 // InputComponent being the blade to debug.
 void FSlicingLogicModule::Debug(UPrimitiveComponent* InputBladeComponent)
 {
-	FSlicingEditorModule& SlicingEditorModule =
-		FModuleManager::Get().LoadModuleChecked<FSlicingEditorModule>("SlicingEditor");
-	
-	if (SlicingEditorModule.bEnableDebugConsoleOutput)
+	if (bEnableDebugConsoleOutput)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Debug: == Pending =="));
 	}

@@ -1,3 +1,5 @@
+// Copyright 2017, Institute for Artificial Intelligence
+
 #pragma once
 
 #include "CoreMinimal.h"
