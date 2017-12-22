@@ -19,5 +19,6 @@ public:
 	static bool OnIsEnableDebugShowPlaneEnabled(bool* bButtonValue);
 	static void OnEnableDebugShowTrajectory(bool* bButtonValue);
 	static bool OnIsEnableDebugShowTrajectoryEnabled(bool* bButtonValue);
+	static void ReplaceSocketsWithUseableComponents();
 };
 

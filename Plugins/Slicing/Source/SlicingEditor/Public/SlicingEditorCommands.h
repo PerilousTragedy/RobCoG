@@ -27,4 +27,5 @@ public:
 	TSharedPtr<FUICommandInfo> EnableDebugConsoleOutput;
 	TSharedPtr<FUICommandInfo> EnableDebugShowPlane;
 	TSharedPtr<FUICommandInfo> EnableDebugShowTrajectory;
+	TSharedPtr<FUICommandInfo> ReplaceSockets;
 };

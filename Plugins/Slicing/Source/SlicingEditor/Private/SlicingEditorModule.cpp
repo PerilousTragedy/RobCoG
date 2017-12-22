@@ -96,6 +96,10 @@ void FSlicingEditorModule::InitializeUIButtons()
 		FCanExecuteAction(),
 		FIsActionChecked::CreateStatic(&FSlicingEditorActionCallbacks::OnIsEnableDebugShowTrajectoryEnabled, &SlicingLogicModule.bEnableDebugShowTrajectory)
 	);
+	PluginCommandList->MapAction(
+		Commands.ReplaceSockets,
+		FExecuteAction::CreateStatic(&FSlicingEditorActionCallbacks::ReplaceSocketsWithUseableComponents)
+	);
 }
 
 //* Adds the neccessary menu-entries & buttons to the staticmesheditor to configure slicable objects
@@ -197,6 +201,7 @@ TSharedRef<SWidget> FSlicingEditorModule::CreateDebugOptionMenu()
 		Builder.AddMenuEntry(Commands.EnableDebugConsoleOutput);
 		Builder.AddMenuEntry(Commands.EnableDebugShowPlane);
 		Builder.AddMenuEntry(Commands.EnableDebugShowTrajectory);
+		Builder.AddMenuEntry(Commands.ReplaceSockets);
 	}
 	Builder.EndSection();
 

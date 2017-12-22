@@ -53,4 +53,9 @@ bool FSlicingEditorActionCallbacks::OnIsEnableDebugShowTrajectoryEnabled(bool* b
 	return *bButtonValue;
 }
 
+void FSlicingEditorActionCallbacks::ReplaceSocketsWithUseableComponents()
+{
+
+}
+
 #undef LOCTEXT_NAMESPACE

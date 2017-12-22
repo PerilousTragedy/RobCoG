@@ -22,6 +22,9 @@ void FSlicingEditorCommands::RegisterCommands()
 		"Enable slicing plane debug view", EUserInterfaceActionType::ToggleButton, FInputChord());
 	UI_COMMAND(EnableDebugShowTrajectory, "Enable Slicing Trajectory",
 		"Enable slicing trajectory debug view", EUserInterfaceActionType::ToggleButton, FInputChord());
+
+	UI_COMMAND(ReplaceSockets, "Replace Sockets to Useable Components",
+		"Replaces sockets created by the slicing plugin to Components that are able to detect collision", EUserInterfaceActionType::Button, FInputChord());
 }
 
 #undef LOCTEXT_NAMESPACE
