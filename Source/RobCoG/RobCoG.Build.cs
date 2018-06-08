@@ -16,12 +16,13 @@ public class RobCoG : ModuleRules
 			"InputCore",
 			"UPIDController",
             "SemLog",
-            "UTags"
-			});
+            "UTags",
+            "VRArmsTracking"
+            });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {
 			"HeadMountedDisplay",
-			"SteamVR"
+            "SteamVR"
 			});
 
 		// Uncomment if you are using Slate UI
