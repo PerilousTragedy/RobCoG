@@ -27,7 +27,7 @@ void UArmAnimInstance::NativeUpdateAnimation(float DeltaTimeX)
 	Super::NativeUpdateAnimation(DeltaTimeX);
 
 	//Check it Pawn == null
-	if (!OwningPawn)
+	if (!OwningPawn || !ArmAnimPawnComponent->Camera)
 	{
 		return;
 	}

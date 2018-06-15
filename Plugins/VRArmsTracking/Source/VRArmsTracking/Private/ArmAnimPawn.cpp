@@ -9,6 +9,8 @@ UArmAnimComponent::UArmAnimComponent()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryComponentTick.bCanEverTick = true;
+	bWantsInitializeComponent = true;
+	bWantsBeginPlay = true;
 
 	//player one will use this
 	//AutoPossessPlayer = EAutoReceiveInput::Player0;
@@ -34,25 +36,18 @@ void UArmAnimComponent::BeginPlay()
 	BlendWeight = 1.0f;
 
 	//Setup the physical animation and crate animation data with magical numbers
-	AnimationComponent->SetSkeletalMeshComponent(Mesh);
-	FPhysicalAnimationData AnimationData = FPhysicalAnimationData();
-	AnimationData.bIsLocalSimulation = true;
-	AnimationData.AngularVelocityStrength = 100;
-	AnimationData.OrientationStrength = 1000;
-	AnimationData.PositionStrength = 1000;
-	AnimationData.VelocityStrength = 100;
 
-	HMDName = UHeadMountedDisplayFunctionLibrary::GetHMDDeviceName().ToString();
+	HMDName = "OculudHMD";//UHeadMountedDisplayFunctionLibrary::GetHMDDeviceName().ToString();
 
 	//adjust relative position of camera and mesh to fit HMD
 	if (HMDName == "OculusHMD") {
-		Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
-		Mesh->SetRelativeLocation(FVector(ShouldersLocalX, 0, -UserHeight));
+		//Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
+		//Mesh->SetRelativeLocation(FVector(ShouldersLocalX, 0, -UserHeight));
 		GetOwner()->SetActorLocation(GetOwner()->GetActorLocation() + FVector(0.0f, 0.0f, UserHeight));
 	}
 	else if (HMDName == "SteamVR") {
-		Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
-		Mesh->SetRelativeLocation(FVector(ShouldersLocalX, 0, -UserHeight));
+		//Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
+		//Mesh->SetRelativeLocation(FVector(ShouldersLocalX, 0, -UserHeight));
 		GetOwner()->SetActorLocation(GetOwner()->GetActorLocation() + FVector(0.0f, 0.0f, UserHeight));
 	}
 
@@ -150,48 +145,75 @@ void UArmAnimComponent::TurnInSteps()
 
 void UArmAnimComponent::InitializeRootComponent()
 {
+
+	TSet<UActorComponent*> Components = GetOwner()->GetComponents();
+	for (auto s : Components) {
+		if (s->IsA(UCameraComponent::StaticClass()))
+		{
+			UCameraComponent* CameraTest = static_cast<UCameraComponent*>(s);
+			Camera = CameraTest;
+		}
+		else if (s->IsA(USkeletalMeshComponent::StaticClass()))
+		{
+			USkeletalMeshComponent* MeshTest = static_cast<USkeletalMeshComponent*>(s);
+			Mesh = MeshTest;
+			Mesh->SetRelativeRotation(MeshRotation);
+			Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+
+		}
+		else if (s->IsA(UMotionControllerComponent::StaticClass()))
+		{
+			UMotionControllerComponent* MotionController = static_cast<UMotionControllerComponent*>(s);
+			if (MotionController->Hand == EControllerHand::Left)
+			{
+				MotionControllerLeft = MotionController;
+			}
+			else
+			{
+				MotionControllerRight = MotionController;
+			}
+		}
+
+	}
 	//Create Default Root component
-	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	//RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 
-	//Create the camera root component
-	CameraRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraRoot"));
-	CameraRoot->SetupAttachment(RootComponent);
+	////Create the camera root component
+	//CameraRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraRoot"));
+	//CameraRoot->SetupAttachment(RootComponent);
 
-	//Create default camera
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	Camera->SetupAttachment(CameraRoot);
-	Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, UserHeight), FRotator(0.0f, 0.0f, 0.0f));
+	////Create default camera
+	//Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
+	//Camera->SetupAttachment(CameraRoot);
+	//Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, UserHeight), FRotator(0.0f, 0.0f, 0.0f));
 
-	//Create default physical animation component
-	AnimationComponent = CreateDefaultSubobject<UPhysicalAnimationComponent>(TEXT("Physical Animation Component"));
+	////Create the mesh component 
+	//Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
+	//Mesh->SetupAttachment(RootComponent);
+	//Mesh->SetRelativeRotation(MeshRotation);
+	//Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
+	//Mesh->SetSkeletalMesh(LoadObject<USkeletalMesh>(Mesh, *SkeletalPath));
 
-	//Create the mesh component 
-	Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
-	Mesh->SetupAttachment(RootComponent);
-	Mesh->SetRelativeRotation(MeshRotation);
-	Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-	Mesh->SetSkeletalMesh(LoadObject<USkeletalMesh>(Mesh, *SkeletalPath));
+	////Setup the physical animation for this mesh
+	//Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//Mesh->bMultiBodyOverlap = true;
+	//Mesh->bGenerateOverlapEvents = 1;
+	//Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
+	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
+	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
+	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
+	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
+	//Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
+	//Mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
 
-	//Setup the physical animation for this mesh
-	Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	Mesh->bMultiBodyOverlap = true;
-	Mesh->bGenerateOverlapEvents = 1;
-	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
-	Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-	Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	Mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	////Create default motion controllers
+	//MotionControllerLeft = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("MotionControllerLeft"));
+	//MotionControllerRight = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("MotionControllerRight"));
+	//MotionControllerLeft->SetupAttachment(RootComponent);
+	//MotionControllerRight->SetupAttachment(RootComponent);
+	//MotionControllerLeft->Hand = EControllerHand::Left;
+	//MotionControllerRight->Hand = EControllerHand::Right;
 
-	//Create default motion controllers
-	MotionControllerLeft = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("MotionControllerLeft"));
-	MotionControllerRight = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("MotionControllerRight"));
-	MotionControllerLeft->SetupAttachment(RootComponent);
-	MotionControllerRight->SetupAttachment(RootComponent);
-	MotionControllerLeft->Hand = EControllerHand::Left;
-	MotionControllerRight->Hand = EControllerHand::Right;
-
-	// Finalize the initialziation process
-	GetOwner()->SetRootComponent(RootComponent);
+	//// Finalize the initialziation process
+	//GetOwner()->SetRootComponent(RootComponent);
 }
