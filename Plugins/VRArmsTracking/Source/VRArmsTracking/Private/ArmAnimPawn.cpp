@@ -87,15 +87,7 @@ void UArmAnimComponent::SetupPlayerInputComponent()
 {
 	APawn* Owner = (APawn*)GetOwner();
 
-	Owner->InputComponent->BindAction("resetPosition", IE_Pressed, this, &UArmAnimComponent::ResetHeadPosition);
-}
-
-//Reset HMD position and make mesh follow HMD
-void UArmAnimComponent::ResetHeadPosition()
-{
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition(0, EOrientPositionSelector::OrientationAndPosition);
-	FTimerHandle UnusedHandle;
-	GetOwner()->GetWorldTimerManager().SetTimer(UnusedHandle, this, &UArmAnimComponent::SetMovementValues, 0.5, false);
+	Owner->InputComponent->BindAction("resetPosition", IE_Pressed, this, &UArmAnimComponent::SetMovementValues);
 }
 
 void UArmAnimComponent::SetMovementValues()
