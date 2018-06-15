@@ -2,6 +2,7 @@
 
 #include "ArmAnimPawn.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 // Sets default values
@@ -22,7 +23,7 @@ void UArmAnimComponent::InitializeComponent()
 {
 	Super::InitializeComponent();
 	
-	InitializeRootComponent();
+	SetPawnComponents();
 }
 
 // Called when the game starts or when spawned
@@ -35,21 +36,7 @@ void UArmAnimComponent::BeginPlay()
 	LeftArmBoneName = FName("upperarm_l");
 	BlendWeight = 1.0f;
 
-	//Setup the physical animation and crate animation data with magical numbers
-
 	HMDName = "OculudHMD";//UHeadMountedDisplayFunctionLibrary::GetHMDDeviceName().ToString();
-
-	//adjust relative position of camera and mesh to fit HMD
-	if (HMDName == "OculusHMD") {
-		//Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
-		//Mesh->SetRelativeLocation(FVector(ShouldersLocalX, 0, -UserHeight));
-		GetOwner()->SetActorLocation(GetOwner()->GetActorLocation() + FVector(0.0f, 0.0f, UserHeight));
-	}
-	else if (HMDName == "SteamVR") {
-		//Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, 0.0f), FRotator(0.0f, 0.0f, 0.0f));
-		//Mesh->SetRelativeLocation(FVector(ShouldersLocalX, 0, -UserHeight));
-		GetOwner()->SetActorLocation(GetOwner()->GetActorLocation() + FVector(0.0f, 0.0f, UserHeight));
-	}
 
 	SetupPlayerInputComponent();
 }
@@ -62,8 +49,8 @@ void UArmAnimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	//Mesh follows HMD
 	if (bHeadReset == true) 
 	{
-		FVector HeadMovedDistance = HeadStartLocation - Camera->GetComponentLocation();
-		Mesh->SetWorldLocation(MeshStartLocation - HeadMovedDistance);
+		Mesh->SetWorldLocation(Camera->GetComponentLocation() + FVector(0, 0, -160));
+
 		if (!bIsTurning)
 		{
 			float ResultHead = HeadYawStart.Yaw - Camera->GetComponentRotation().Yaw;
@@ -113,8 +100,9 @@ void UArmAnimComponent::ResetHeadPosition()
 
 void UArmAnimComponent::SetMovementValues()
 {
-	MeshStartLocation = Mesh->GetComponentLocation();
 	HeadStartLocation = Camera->GetComponentLocation();
+	MeshStartLocation = HeadStartLocation + FVector(0, 0, -160);
+
 	HeadYawStart = Camera->GetComponentRotation();
 	ControllerRYawStart = MotionControllerRight->GetComponentRotation();
 	ControllerLYawStart = MotionControllerLeft->GetComponentRotation();
@@ -143,77 +131,31 @@ void UArmAnimComponent::TurnInSteps()
 	}
 }
 
-void UArmAnimComponent::InitializeRootComponent()
+// Get all the components created by the MCCharacter and save them to internal variables
+void UArmAnimComponent::SetPawnComponents()
 {
-
-	TSet<UActorComponent*> Components = GetOwner()->GetComponents();
-	for (auto s : Components) {
-		if (s->IsA(UCameraComponent::StaticClass()))
+	TSet<UActorComponent*> ActorComponents = GetOwner()->GetComponents();
+	for (UActorComponent* Component : ActorComponents) {
+		if (UCameraComponent* CameraComponent = Cast<UCameraComponent>(Component))
 		{
-			UCameraComponent* CameraTest = static_cast<UCameraComponent*>(s);
-			Camera = CameraTest;
+			Camera = CameraComponent;
 		}
-		else if (s->IsA(USkeletalMeshComponent::StaticClass()))
+		else if (USkeletalMeshComponent* SkeletalMeshComponent = Cast<USkeletalMeshComponent>(Component))
 		{
-			USkeletalMeshComponent* MeshTest = static_cast<USkeletalMeshComponent*>(s);
-			Mesh = MeshTest;
+			Mesh = SkeletalMeshComponent;
 			Mesh->SetRelativeRotation(MeshRotation);
 			Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-
 		}
-		else if (s->IsA(UMotionControllerComponent::StaticClass()))
+		else if (UMotionControllerComponent* MotionControllerComponent = Cast<UMotionControllerComponent>(Component))
 		{
-			UMotionControllerComponent* MotionController = static_cast<UMotionControllerComponent*>(s);
-			if (MotionController->Hand == EControllerHand::Left)
+			if (MotionControllerComponent->Hand == EControllerHand::Left)
 			{
-				MotionControllerLeft = MotionController;
+				MotionControllerLeft = MotionControllerComponent;
 			}
 			else
 			{
-				MotionControllerRight = MotionController;
+				MotionControllerRight = MotionControllerComponent;
 			}
 		}
-
 	}
-	//Create Default Root component
-	//RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
-
-	////Create the camera root component
-	//CameraRoot = CreateDefaultSubobject<USceneComponent>(TEXT("CameraRoot"));
-	//CameraRoot->SetupAttachment(RootComponent);
-
-	////Create default camera
-	//Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
-	//Camera->SetupAttachment(CameraRoot);
-	//Camera->SetRelativeLocationAndRotation(FVector(0.0f, 0.0f, UserHeight), FRotator(0.0f, 0.0f, 0.0f));
-
-	////Create the mesh component 
-	//Mesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Mesh"));
-	//Mesh->SetupAttachment(RootComponent);
-	//Mesh->SetRelativeRotation(MeshRotation);
-	//Mesh->SetRelativeLocation(FVector(0.0f, 0.0f, 0.0f));
-	//Mesh->SetSkeletalMesh(LoadObject<USkeletalMesh>(Mesh, *SkeletalPath));
-
-	////Setup the physical animation for this mesh
-	//Mesh->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//Mesh->bMultiBodyOverlap = true;
-	//Mesh->bGenerateOverlapEvents = 1;
-	//Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Block);
-	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Camera, ECollisionResponse::ECR_Ignore);
-	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Visibility, ECollisionResponse::ECR_Ignore);
-	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_PhysicsBody, ECollisionResponse::ECR_Ignore);
-	//Mesh->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Ignore);
-	//Mesh->SetCollisionObjectType(ECollisionChannel::ECC_WorldStatic);
-	//Mesh->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-
-	////Create default motion controllers
-	//MotionControllerLeft = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("MotionControllerLeft"));
-	//MotionControllerRight = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("MotionControllerRight"));
-	//MotionControllerLeft->SetupAttachment(RootComponent);
-	//MotionControllerRight->SetupAttachment(RootComponent);
-	//MotionControllerLeft->Hand = EControllerHand::Left;
-	//MotionControllerRight->Hand = EControllerHand::Right;
-
-	//// Finalize the initialziation process
-	//GetOwner()->SetRootComponent(RootComponent);
 }

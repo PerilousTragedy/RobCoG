@@ -121,7 +121,7 @@ public:
 
 	//The height of the user
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		float UserHeight = 170;
+		float UserHeight = 0;
 
 	//Path to the arms skeletal mesh 
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -162,5 +162,5 @@ public:
 	void SetupPlayerInputComponent();
 
 private:
-	void InitializeRootComponent();
+	void SetPawnComponents();
 };
