@@ -92,12 +92,6 @@ FVector UArmAnimInstance::CalculateOffset(bool bIsRightHand, UArmAnimComponent* 
 	float DistanceHandEff = (CurrentPawn->Mesh->GetSocketLocation(Lowerarm) - EffectorLocation).Size();
 	float DistanceHandHit = (CurrentPawn->Mesh->GetSocketLocation(Lowerarm) - HitObject.Location).Size();
 
-	//Compare the distance
-	if (DistanceHandEff > DistanceHandHit)
-	{
-		return HitObject.Location;
-	}
-
 	return EffectorLocation;
 
 }
@@ -107,23 +101,33 @@ FVector UArmAnimInstance::CalculatePosition(bool bIsRightHand, FRotator HandWorl
 	FName SocketName;
 	FName HandName;
 	AActor* CurrentHand;
+	USkeletalMeshComponent* CurrentHandComponent;
+	FName CurrentHandSocketName;
 	if (bIsRightHand)
 	{
 		SocketName = FName("hand_rSocket");
 		HandName = FName("hand_r");
 		CurrentHand = ArmAnimPawnComponent->RightHand;
+		CurrentHandComponent = 
+			(USkeletalMeshComponent*)ArmAnimPawnComponent->RightHand->GetComponentByClass(USkeletalMeshComponent::StaticClass());
+		CurrentHandSocketName = "armature_socket_right";
 	}
 	else
 	{
 		SocketName = FName("hand_lSocket");
 		HandName = FName("hand_l");
 		CurrentHand = ArmAnimPawnComponent->LeftHand;
+		CurrentHandComponent =
+			(USkeletalMeshComponent*)ArmAnimPawnComponent->LeftHand->GetComponentByClass(USkeletalMeshComponent::StaticClass());
+		CurrentHandSocketName = "armature_socket_left";
 	}
 
 	FVector SocketLocation = ArmAnimPawnComponent->Mesh->GetSocketLocation(SocketName);
 	FVector HandLocation = ArmAnimPawnComponent->Mesh->GetSocketLocation(HandName);
 	FRotator HandRotation = ArmAnimPawnComponent->Mesh->GetSocketRotation(HandName);
-	if (CurrentHand != nullptr) {
+
+	// The hand will always be controller by someone else
+	if (false) {//CurrentHand != nullptr) {
 		TArray<USkeletalMeshComponent*> Components;
 		CurrentHand->GetComponents<USkeletalMeshComponent>(Components);
 		FVector PositionOffset;
@@ -142,8 +146,13 @@ FVector UArmAnimInstance::CalculatePosition(bool bIsRightHand, FRotator HandWorl
 			CurrentHand->SetActorRotation(FRotator(-HandWorldRotation.Roll, HandWorldRotation.Yaw, HandWorldRotation.Pitch) + HandRotationOffset);
 		}
 	}
+
 	FVector LocalAdjX = CurrentMotionController->GetForwardVector()*ArmAnimPawnComponent->LocalHandAdjustmentX;
-	FVector MotionController = CurrentMotionController->GetComponentLocation() + LocalAdjX;
+
+	// Get the location of the hand sockets
+	FVector MotionController = CurrentHandComponent->GetSocketLocation(CurrentHandSocketName);
+		//CurrentMotionController->GetComponentLocation() + LocalAdjX + ArmAnimPawnComponent->MotionControllerOffset;
+	
 	return CalculateOffset(bIsRightHand, ArmAnimPawnComponent, MotionController);
 }
 

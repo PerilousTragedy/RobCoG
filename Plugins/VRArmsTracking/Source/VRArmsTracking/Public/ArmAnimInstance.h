@@ -26,7 +26,6 @@ public:
 	//The Left Hand World location for the Anim Graph
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		FVector LeftHandWorldLocation;
-
 	//The right Hand World location for the Anim Graph
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		FVector RightHandWorldLocation;
@@ -34,7 +33,6 @@ public:
 	//The Left Hand World rotation for the Anim Graph
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		FRotator LeftHandWorldRotation;
-
 	//The right Hand World rotation for the Anim Graph
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		FRotator RightHandWorldRotation;

@@ -131,6 +131,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 		float ShouldersLocalX = -10;
 
+	// The offset of the motion controllers (hands) versus the arms
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
+		FVector MotionControllerOffset = FVector(0, 0, 0);
+
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
