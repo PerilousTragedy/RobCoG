@@ -15,7 +15,6 @@ public class RobCoG : ModuleRules
 			"Engine", 
 			"InputCore",
 			"UPIDController",
-            "SemLog",
             "UTags",
             "VRArmsTracking"
             });
