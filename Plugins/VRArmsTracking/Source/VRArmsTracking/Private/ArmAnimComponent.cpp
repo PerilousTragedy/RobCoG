@@ -1,9 +1,8 @@
 // Copyright 2017, Institute for Artificial Intelligence - University of Bremen
 
-#include "ArmAnimPawn.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
-#include "Kismet/KismetMathLibrary.h"
+#include "ArmAnimComponent.h"
 
+#include "HeadMountedDisplayFunctionLibrary.h"
 
 // Sets default values
 UArmAnimComponent::UArmAnimComponent()

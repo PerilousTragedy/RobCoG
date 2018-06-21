@@ -12,7 +12,7 @@
 #include "VRArmsTracking.h"
 #include "Components/ActorComponent.h"
 
-#include "ArmAnimPawn.generated.h"
+#include "ArmAnimComponent.generated.h"
 
 /*
 This class represents a pawn which is intended to support realistic arm movement.

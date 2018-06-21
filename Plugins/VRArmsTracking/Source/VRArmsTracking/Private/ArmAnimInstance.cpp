@@ -149,9 +149,8 @@ FVector UArmAnimInstance::CalculatePosition(bool bIsRightHand, FRotator HandWorl
 
 	FVector LocalAdjX = CurrentMotionController->GetForwardVector()*ArmAnimPawnComponent->LocalHandAdjustmentX;
 
-	// Get the location of the hand sockets
+	// Set the location of the controllers right where the hands are
 	FVector MotionController = CurrentHandComponent->GetSocketLocation(CurrentHandSocketName);
-		//CurrentMotionController->GetComponentLocation() + LocalAdjX + ArmAnimPawnComponent->MotionControllerOffset;
 	
 	return CalculateOffset(bIsRightHand, ArmAnimPawnComponent, MotionController);
 }
