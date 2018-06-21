@@ -70,3 +70,5 @@ Intermediate
 # Cache files for the editor to use
 DerivedDataCache/*
 
+# New physics based MC
+Plugins/UPhysicsBasedMC
