@@ -11,7 +11,7 @@
 #include "IHeadMountedDisplay.h"
 #include "IXRTrackingSystem.h"
 
-#include "ArmAnimPawn.h"
+#include "ArmAnimComponent.h"
 
 // Sets default values
 AMCCharacter::AMCCharacter()

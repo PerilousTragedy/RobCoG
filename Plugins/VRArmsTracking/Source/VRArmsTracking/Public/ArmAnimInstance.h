@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "ArmAnimPawn.h"
+#include "ArmAnimComponent.h"
 #include "VRArmsTracking.h"
 
 #include "ArmAnimInstance.generated.h"
