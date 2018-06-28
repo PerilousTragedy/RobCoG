@@ -117,7 +117,7 @@ public:
 
 	//This threshold will determine when the mesh will turn to the left /right
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
-		int TurnThreshold = 45;
+		int TurnThreshold = 20;
 
 	//The height of the user
 	UPROPERTY(BlueprintReadWrite, EditAnywhere)
@@ -151,7 +151,7 @@ public:
 	int TurnStepCounter;
 
 	//Number of steps to turn
-	int MaxTurnSteps = 20;
+	int MaxTurnSteps = 10;
 
 	//One rotation step
 	FRotator RotationStep;

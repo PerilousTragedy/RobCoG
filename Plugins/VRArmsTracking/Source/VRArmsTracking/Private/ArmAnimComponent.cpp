@@ -46,36 +46,68 @@ void UArmAnimComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	//Mesh follows HMD
-	if (bHeadReset == true) 
+	if (bHeadReset) 
 	{
 		Mesh->SetWorldLocation(Camera->GetComponentLocation() + FVector(0, 0, -160));
 
-		if (!bIsTurning)
+		if (bIsTurning) 
 		{
-			float ResultHead = HeadYawStart.Yaw - Camera->GetComponentRotation().Yaw;
-			float ResultLHand = ControllerLYawStart.Yaw - MotionControllerLeft->GetComponentRotation().Yaw;
-			float ResultRHand = ControllerRYawStart.Yaw - MotionControllerRight->GetComponentRotation().Yaw;
-			if (ResultHead < -TurnThreshold && ResultHead > -360 + TurnThreshold && ResultLHand < -TurnThreshold && ResultRHand < -TurnThreshold)
-			{
-				RotationStep = FRotator(0, TurnThreshold / MaxTurnSteps, 0);
-				if (ResultHead < -180) {
-					RotationStep = FRotator(0, -(TurnThreshold / MaxTurnSteps), 0);
-				}
-				RotationStep = FRotator(0, TurnThreshold / MaxTurnSteps, 0);
-				TurnStepCounter = 0;
-				bIsTurning = true;
-				GetOwner()->GetWorldTimerManager().SetTimer(TurnTimer, this, &UArmAnimComponent::TurnInSteps, 0.01, true);
-			}
-			else if (ResultHead > TurnThreshold && ResultHead < 360 - TurnThreshold && ResultLHand > TurnThreshold && ResultRHand > TurnThreshold)
-			{
-				RotationStep = FRotator(0, -(TurnThreshold / MaxTurnSteps), 0);
-				if (ResultHead > 180) {
-					RotationStep = FRotator(0, TurnThreshold / MaxTurnSteps, 0);
-				}
-				TurnStepCounter = 0;
-				bIsTurning = true;
-				GetOwner()->GetWorldTimerManager().SetTimer(TurnTimer, this, &UArmAnimComponent::TurnInSteps, 0.01, true);
-			}
+			return;
+		}
+		
+		float ResultHead = HeadYawStart.Yaw - Camera->GetComponentRotation().Yaw;
+		float ResultLHand = ControllerLYawStart.Yaw - MotionControllerLeft->GetComponentRotation().Yaw;
+		float ResultRHand = ControllerRYawStart.Yaw - MotionControllerRight->GetComponentRotation().Yaw;
+			
+		//if (ResultHead < -TurnThreshold &&
+		//	ResultLHand < -TurnThreshold &&
+		//	ResultRHand < -TurnThreshold)
+		//{
+		//	if (ResultHead < -180)
+		//	{
+		//		RotationStep = FRotator(0, -(TurnThreshold / MaxTurnSteps), 0);
+		//	}
+		//	else
+		//	{
+		//		RotationStep = FRotator(0, TurnThreshold / MaxTurnSteps, 0);
+		//	}
+
+		//	TurnStepCounter = 0;
+		//	bIsTurning = true;
+		//	GetOwner()->GetWorldTimerManager().SetTimer(TurnTimer, this, &UArmAnimComponent::TurnInSteps, 0.01, true);
+		//}
+		//else if (ResultHead > TurnThreshold && 
+		//	ResultLHand > TurnThreshold &&
+		//	ResultRHand > TurnThreshold)
+		//{
+		//	if (ResultHead > 180)
+		//	{
+		//		RotationStep = FRotator(0, TurnThreshold / MaxTurnSteps, 0);
+		//	}
+		//	else
+		//	{
+		//		RotationStep = FRotator(0, -(TurnThreshold / MaxTurnSteps), 0);
+		//	}
+
+		//	TurnStepCounter = 0;
+		//	bIsTurning = true;
+		//	GetOwner()->GetWorldTimerManager().SetTimer(TurnTimer, this, &UArmAnimComponent::TurnInSteps, 0.01, true);
+		//}
+
+		if (ResultHead < -TurnThreshold && ResultLHand < -TurnThreshold && ResultRHand < -TurnThreshold) {
+			FRotator NewRotation = FRotator(0, Mesh->GetComponentRotation().Yaw + TurnThreshold, 0);
+			Mesh->SetWorldRotation(NewRotation);
+			HeadYawStart += FRotator(0, TurnThreshold, 0);
+			ControllerLYawStart += FRotator(0, TurnThreshold, 0);
+			ControllerRYawStart += FRotator(0, TurnThreshold, 0);
+		}
+
+		if (ResultHead > TurnThreshold && ResultLHand > TurnThreshold && ResultRHand > TurnThreshold) {
+			FRotator NewRotation = FRotator(0, Mesh->GetComponentRotation().Yaw - TurnThreshold, 0);
+			Mesh->SetWorldRotation(NewRotation);
+			HeadYawStart -= FRotator(0, TurnThreshold, 0);
+			ControllerLYawStart -= FRotator(0, TurnThreshold, 0);
+			ControllerRYawStart -= FRotator(0, TurnThreshold, 0);
 		}
 	}
 
