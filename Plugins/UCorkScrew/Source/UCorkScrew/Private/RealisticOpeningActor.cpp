@@ -10,7 +10,7 @@
 ARealisticOpeningActor::ARealisticOpeningActor() 
 {
 	PrimaryActorTick.bCanEverTick = true;
-	if (ActiveOpeningConstraint) 
+	if (bIsActiveOpeningConstraint) 
 		{
 			BottleOpening();
 		}
@@ -21,7 +21,7 @@ ARealisticOpeningActor::ARealisticOpeningActor(const FObjectInitializer & Object
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	if (ActiveOpeningConstraint) 
+	if (bIsActiveOpeningConstraint) 
 		{
 			BottleOpening();
 		}
@@ -31,35 +31,52 @@ ARealisticOpeningActor::ARealisticOpeningActor(const FObjectInitializer & Object
 void ARealisticOpeningActor::BeginPlay()
 {
 	Super::BeginPlay();
-	if (ActiveOpeningConstraint) 
+	if (bIsActiveOpeningConstraint) 
 		{
 			BottleOpening();
 		}
-	OldSwingDegreeDebug = this->GetConstraintComp()->GetCurrentSwing1();
 }
 
 // Called every frame
 void ARealisticOpeningActor::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (RotateDirectionRight) 
+	float currentDegree;
+	if (bIsRotateDirectionRight) 
 		{
-			float currentDegree = DegreeCalcRight();
-			float test = this->GetConstraintComp()->GetCurrentSwing1();
+			currentDegree = GetDegreeCalcRight();
 			MovingAndBreaking(currentDegree);
-			OldCurrentDegreeForDebug = currentDegree;
-		/*	if(!this->GetConstraintComp()->IsBroken() && (OldSwingDegreeDebug + 1 <= test || OldSwingDegreeDebug - 1 >= test))
-				{
-					UE_LOG(LogTemp, Display, TEXT("Current Swing Degree: %f"), test);
-					OldCurrentDegreeForDebug = this->GetConstraintComp()->GetCurrentSwing1();
-				} */
 		}
 		else 
 		{
-			float currentDegree = DegreeCalcLeft();
+			currentDegree = GetDegreeCalcLeft();
 			MovingAndBreaking(currentDegree);
 		}
+	if (bIsDebuggingModeOn) {
+		TickCounter++;
+		if (TickCounter % 100 == 0) {
+			/*if (MoveToAngle >= currentDegree) 
+			{
+				this->GetConstraintComp()->ConstraintActor2->AddActorLocalRotation(FRotator::FRotator(0, 0, 1));
+				UE_LOG(LogTemp, Display, TEXT("Goes to right."));
+			}
+			else if (MoveToAngle <= currentDegree) 
+				{
+					this->GetConstraintComp()->ConstraintActor2->AddActorLocalRotation(FRotator::FRotator(0, 0, -1));
+					UE_LOG(LogTemp, Display, TEXT("Goes to left."));
+				}*/
+		}
+		if (OldCurrentDegreeForDebug+1 < currentDegree || OldCurrentDegreeForDebug-1 > currentDegree)
+			{
+				UE_LOG(LogTemp, Display, TEXT("Current Degree: %f"), currentDegree);
+				UE_LOG(LogTemp, Display, TEXT("Current Swing1 Degree: %f"), this->GetConstraintComp()->GetCurrentSwing1());
+				if(this->GetConstraintComp()->IsBroken())
+					{
+						UE_LOG(LogTemp, Display, TEXT("Is broken!"));
+					}
+				OldCurrentDegreeForDebug = currentDegree;
+			}
+	}
 }
 
 void ARealisticOpeningActor::LoadedFromAnotherClass(const FName & OldClassName) 
@@ -74,7 +91,7 @@ void ARealisticOpeningActor::PostLoad()
 void ARealisticOpeningActor::BottleOpening() 
 {
 	TurnCounter = 0;
-	if (ActiveOpeningConstraint) 
+	if (bIsActiveOpeningConstraint) 
 		{
 			// Sets the constraint limit, also checks in which direction it should be turnable.
 			ActivateConstraintLimit();
@@ -89,9 +106,11 @@ void ARealisticOpeningActor::BottleOpening()
 				}
 			bIsTurnFlagOn = false;
 			// Getting the distance to move up per degree.
-			UpMovingDistancePerDegree = UpMovingDistance / ScrewAngle;
+			UpMovingDistancePerDegree = UpMovingDistance / DestroyAngle;
 
+			OldSwingDegreeDebug = this->GetConstraintComp()->GetCurrentSwing1();
 			OldCurrentDegreeForDebug = 0;
+			TickCounter = 0;
 	}
 }
 
@@ -101,7 +120,7 @@ void ARealisticOpeningActor::ActivateConstraintLimit()
 	this->GetConstraintComp()->SetAngularTwistLimit(EAngularConstraintMotion::ACM_Locked, 0);
 	// Locks movement at 30 degrees.
 	this->GetConstraintComp()->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, 30.0f);
-	if (RotateDirectionRight) 
+	if (bIsRotateDirectionRight) 
 		{
 			// Gives a 30 degree offset to make it impossible turning it to the left, since the 30 degree limit.
 			this->GetConstraintComp()->ConstraintInstance.AngularRotationOffset = FRotator::FRotator(0, 30, 0);
@@ -117,229 +136,178 @@ void ARealisticOpeningActor::ActivateConstraintLimit()
 	this->GetConstraintComp()->SetLinearDriveParams(50000, 50000, 0);
 	this->GetConstraintComp()->SetLinearVelocityTarget(FVector::FVector(0, 0, 0));
 	this->GetConstraintComp()->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, 0);
-	OldSwing1Degree = this->GetConstraintComp()->GetCurrentSwing1();
-
 	
 	this->GetConstraintComp()->SetAngularDriveMode(EAngularDriveMode::TwistAndSwing);
 	this->GetConstraintComp()->SetAngularVelocityDriveTwistAndSwing(false, true);
 	this->GetConstraintComp()->SetAngularDriveParams(1, 1, 0);
-	//this->GetConstraintComp()->SetAngularVelocityTarget(FVector::FVector(1, 1, 1));
 	this->GetConstraintComp()->SetAngularDriveParams(50000, 50000, 0);
 	
+	OldSwing1Degree = this->GetConstraintComp()->GetCurrentSwing1();
 }
 
-float ARealisticOpeningActor::DegreeCalcRight()
+float ARealisticOpeningActor::GetDegreeCalcRight()
 {
-	float CurrentSwingDegree = this->GetConstraintComp()->GetCurrentSwing1();
+	// Saves the current degrees of Swing 1.
+	float CurrentSwing1Degree = this->GetConstraintComp()->GetCurrentSwing1();
+	// Save variable for saving the degree number that are over the 180 degree points.
+	float CalculatedOver180Degrees = 0;
+
 	// Checks the direction of the movement. If the direction is to the right its true.
 	// Current value will be bigger than the old one if it turns to the right.
-	if (CurrentSwingDegree > OldSwing1Degree) 
+	if (CurrentSwing1Degree > OldSwing1Degree)
+	{
+		// First "OR"-part checks if the 150 degrees are past, because then the 180 degree point is passed and need to be counted.
+		// Second "OR"-part checks if the -30 degree are past, also if its already turning, 
+		// because then the 180 degree point is passed and need to be counted.
+		// The last part makes sure that is turning and it wasnt a left turn over 180 degree point. 
+		// If anyone can turn it 20 Degrees in less than 1 tick this fix wont work.
+		if (((CurrentSwing1Degree >= 150 && OldSwing1Degree < 150) || (CurrentSwing1Degree >= -30 && OldSwing1Degree < -30)) && bIsTurnFlagOn && CurrentSwing1Degree >= -170 && CurrentSwing1Degree <= 170)
 		{
-			if (OldSwing1Degree < -170 && CurrentSwingDegree >= 170) 
-				{
-				}
-				else 
-				{
-					// If the turning flag isnt set and it is passing the 0 point, it needs to be set
-					// and the limit needs to be turned of, so the lid can rotate free.
-					// Not more checks necessary, because the right turn can only increase the turning values
-					// on right turning opening.
-					if (!bIsTurnFlagOn && CurrentSwingDegree > 0 && OldSwing1Degree < 0) 
-						{
-							this->GetConstraintComp()->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Free, 360.f);
-							bIsTurnFlagOn = true;
-							UE_LOG(LogTemp, Display, TEXT("Drinnen!"));
-						}
-						// If it passes the 150 degree to the right, it has 180 degrees completed. Increase counter.
-						else if (bIsTurnFlagOn && CurrentSwingDegree >= 150 && OldSwing1Degree < 150) 
-						{
-							++TurnCounter;
-						}
-						// If it passes the -30 degree to the right, it has 180 degrees completed. Increase counter.
-						else if (bIsTurnFlagOn && CurrentSwingDegree > -30 && OldSwing1Degree < -30) 
-						{
-							++TurnCounter;
-						}
-				}
-		}
-		// If the the current value is smaller than the old one, direction must be on the left.
-		// No else necessary, since there is nothing to do if the value is equal.
-		else if (CurrentSwingDegree < OldSwing1Degree) 
-		{
-			// To make sure it does nothing on the switch to negative values.
-			if (OldSwing1Degree > 170 && CurrentSwingDegree >= -180 && CurrentSwingDegree < 0) 
-				{
-				}
-				// When it doesnt switch just to negative values
-				else 
-				{
-					// Check if it passes the 0 and the 180 degree turn Counter is on 0, to turn the limits on again.
-					if (bIsTurnFlagOn && CurrentSwingDegree < 0 && OldSwing1Degree > 0 && TurnCounter == 0) 
-						{
-							ActivateConstraintLimit();
-							bIsTurnFlagOn = false;
-						}
-					// If it passes the 150 degree to the left, it has 180 degrees completed. Decrease counter.
-						else if (bIsTurnFlagOn && CurrentSwingDegree < 150 && OldSwing1Degree >= 150) 
-						{
-							--TurnCounter;
-						}
-						// If it passes the -30 degree to the left, it has 180 degrees completed. Decrease counter.
-						else if (bIsTurnFlagOn && CurrentSwingDegree < -30 && OldSwing1Degree > -30) 
-						{
-							--TurnCounter;
-						}
-				}
+			// Count half turn.
+			++TurnCounter;
 		}
 
-	/*if (TurnCounter == 0)
+		// Checks if the 0 degree are point is passed, to set the turning limit free and save that its turning in the turning flag.
+		if (!bIsTurnFlagOn && CurrentSwing1Degree >= 0 && OldSwing1Degree < 0)
 		{
+			this->GetConstraintComp()->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Free, 360.f);
+			bIsTurnFlagOn = true;
+		}
+	}
+
+	// Checks the direction of the movement. If the direction is to the left its true.
+	// Current value will be bigger than the old one if it turns to the left.
+	else if (CurrentSwing1Degree < OldSwing1Degree)
+	{
+		// First "OR"-part checks if the 150 degrees are past, because then the 180 degree point is passed and need to be counted.
+		// Second "OR"-part checks if the -30 degree are past, also if its already turning, 
+		// because then the 180 degree point is passed and need to be counted.
+		// The last part makes sure that is turning and it wasnt a left turn over 180 degree point. 
+		// If anyone can turn it 20 Degrees in less than 1 tick this fix wont work.
+		if ((CurrentSwing1Degree <= 150 && OldSwing1Degree > 150 || CurrentSwing1Degree <= -30 && OldSwing1Degree > -30) && bIsTurnFlagOn && CurrentSwing1Degree >= -170 && CurrentSwing1Degree <= 170)
+		{
+			// Removes a half turn after passing the half turn point.
+			--TurnCounter;
+		}
+		// Makes sure it can't go over the start point. Also setting the turn flag off.
+		if (CurrentSwing1Degree <= 0 && OldSwing1Degree > 0 && TurnCounter == 0)
+		{
+			this->GetConstraintComp()->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, 30.0f);
 			bIsTurnFlagOn = false;
-		}*/
-	// Set the current degrees to the old once, to use it at the next call.
-	OldSwing1Degree = CurrentSwingDegree;
-
-	// Calculating the degree rest over the 180 degree counter.
-	// Also takes care of the 30 degrees offset.
-
-	// If the current swing is between 150 and 180.
-	if (CurrentSwingDegree >= 150 && CurrentSwingDegree <= 180 && bIsTurnFlagOn)
-		{
-			CurrentSwingDegree = CurrentSwingDegree - 150;
 		}
-		// If the current swing is between -180 and -30.
-		else if (CurrentSwingDegree >= -180 && CurrentSwingDegree < -30 && bIsTurnFlagOn) 
-		{
-			CurrentSwingDegree = 210 + CurrentSwingDegree;
-		}
-		// If the current swing is between -30 and 150
-		else 
-		{
-			CurrentSwingDegree = CurrentSwingDegree + 30;
-		}
+	}
 
-	// The degree over the 180 degree counter + 180 degree counter * 180 degrees
-	// is the real turned value, return this value.
-	return CurrentSwingDegree + (TurnCounter * 180);
+	// Calculates the Degrees over the half turn points.
+	if (CurrentSwing1Degree >= -30 && CurrentSwing1Degree <= 180)
+	{
+		// Degree calculation on the Degrees which are over 180.
+		CalculatedOver180Degrees = CurrentSwing1Degree + 30;
+		// If its bigger than 180, subtract 180 degrees to get the degrees, that are over 180.
+		if (CalculatedOver180Degrees >= 180)
+		{
+			CalculatedOver180Degrees = CalculatedOver180Degrees - 180;
+		}
+	}
+	else if(bIsTurnFlagOn)
+	{
+		// Since the actual CurrentSwing1Degree value must be below -30 its a negative value.
+		// By adding 210 and the negatvie degree value the correct value above the 180 degree point gets calculated.
+		CalculatedOver180Degrees = 210 + CurrentSwing1Degree;
+	}
 
+	// Set the current Swing1 Degrees as OldSwing1Degrees for the next run in this function.
+	OldSwing1Degree = CurrentSwing1Degree;
+	// Returns the actual real turned degrees.
+	return (CalculatedOver180Degrees + (TurnCounter * 180));
 }
 
-float ARealisticOpeningActor::DegreeCalcLeft() 
+float ARealisticOpeningActor::GetDegreeCalcLeft() 
 {
-	float CurrentSwingDegree = this->GetConstraintComp()->GetCurrentSwing1();
+	// Saves the current degrees of Swing 1.
+	float CurrentSwing1Degree = this->GetConstraintComp()->GetCurrentSwing1();
+	// Save variable for saving the degree number that are over the 180 degree points.
+	float CalculatedOver180Degrees;
+
+	// Checks the direction of the movement. If the direction is to the left its true.
+	// Current value will be bigger than the old one if it turns to the left.
+	if (CurrentSwing1Degree < OldSwing1Degree)
+	{
+		// First "OR"-part checks if the -150 degrees are past, because then the 180 degree point is passed and need to be counted.
+		// Second "OR"-part checks if the 30 degree are past, also if its already turning, 
+		// because then the 180 degree point is passed and need to be counted.
+		// The last part makes sure that is turning and it wasnt a left turn over 180 degree point. 
+		// If anyone can turn it 20 Degrees in less than 1 tick this fix wont work.
+		if ((CurrentSwing1Degree <= -150 && OldSwing1Degree > -150 || CurrentSwing1Degree <= 30 && OldSwing1Degree > 30) && bIsTurnFlagOn && CurrentSwing1Degree >= -170 && CurrentSwing1Degree <= 170)
+		{
+			// Count half turn.
+			++TurnCounter;
+		}
+
+		// Checks if the 0 degree are point is passed, to set the turning limit free and save that its turning in the turning flag.
+		if (CurrentSwing1Degree <= 0 && OldSwing1Degree > 0)
+		{
+			this->GetConstraintComp()->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Free, 360.f);
+			bIsTurnFlagOn = true;
+		}
+	}
 
 	// Checks the direction of the movement. If the direction is to the right its true.
 	// Current value will be bigger than the old one if it turns to the right.
-	if (CurrentSwingDegree > OldSwing1Degree) 
+	if (CurrentSwing1Degree > OldSwing1Degree)
+	{
+		// First "OR"-part checks if the -150 degrees are past, because then the 180 degree point is passed and need to be counted.
+		// Second "OR"-part checks if the 30 degree are past, also if its already turning, 
+		// because then the 180 degree point is passed and need to be counted.
+		// The last part makes sure that is turning and it wasnt a left turn over 180 degree point. 
+		// If anyone can turn it 20 Degrees in less than 1 tick this fix wont work.
+		if ((CurrentSwing1Degree >= -150 && OldSwing1Degree < -150 || CurrentSwing1Degree >= 30 && OldSwing1Degree < 30) && bIsTurnFlagOn && CurrentSwing1Degree >= -170 && CurrentSwing1Degree <= 170)
 		{
-			// To make sure it does nothing on the switch to negative values.
-			if (OldSwing1Degree < -170 && CurrentSwingDegree >= 170) 
-				{
-				}
-				else 
-				{
-					// Check if it passes the 0 and the 180 degree turn Counter is on 0, to turn the limits on again.
-					if (bIsTurnFlagOn && CurrentSwingDegree > 0 && OldSwing1Degree < 0 && TurnCounter == 0)
-						{
-							ActivateConstraintLimit();
-							bIsTurnFlagOn = false;
-						}
-						// If it passes the -150 degree to the right, it has 180 degrees completed. Decrease counter.
-						else if (bIsTurnFlagOn && CurrentSwingDegree >= -150 && OldSwing1Degree < -150) 
-						{
-							--TurnCounter;
-						}
-						// If it passes the 30 degree to the right, it has 180 degrees completed. Decrease counter.
-						else if (bIsTurnFlagOn && CurrentSwingDegree > 30 && OldSwing1Degree < 30) 
-						{
-							--TurnCounter;
-						}
-				}
+			// Removes a half turn after passing the half turn point.
+			--TurnCounter;
 		}
-		// If the the current value is smaller than the old one, direction must be on the left.
-		// No else necessary, since there is nothing to do if the value is equal.
-		else if (CurrentSwingDegree < OldSwing1Degree) 
+		// Makes sure it can't go over the start point. Also setting the turn flag off.
+		if (CurrentSwing1Degree >= 0 && OldSwing1Degree < 0 && TurnCounter == 0)
 		{
-			// To make sure it does nothing on the switch to negative values.
-			if (OldSwing1Degree > 170 && CurrentSwingDegree >= -180 && CurrentSwingDegree < 0) 
-				{
-				}
-				else {
-					// If the turning flag isnt set and it is passing the 0 point, it needs to be set
-					// and the limit needs to be turned of, so the lid can rotate free.
-					// Not more checks necessary, because the right turn can only increase the turning values
-					// on right turning opening.
-					if (!bIsTurnFlagOn && CurrentSwingDegree < 0 && OldSwing1Degree > 0) 
-						{
-							this->GetConstraintComp()->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Free, 360.f);
-							bIsTurnFlagOn = true;
-						}
-						// If it passes the -150 degree to the left, it has 180 degrees completed. Increase counter.
-						else if (bIsTurnFlagOn && CurrentSwingDegree < -150 && OldSwing1Degree >= -150) 
-						{
-							++TurnCounter;
-						}
-						// If it passes the 30 degree to the left, it has 180 degrees completed. Increase counter.
-						else if (bIsTurnFlagOn && CurrentSwingDegree < 30 && OldSwing1Degree > 30) 
-						{
-							++TurnCounter;
-						}
-				}
+			this->GetConstraintComp()->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, 30.0f);
+			bIsTurnFlagOn = false;
 		}
+	}
 
-	// Set the current degrees to the old once, to use it at the next call.
-	OldSwing1Degree = CurrentSwingDegree;
-	
-	// Calculating the degree rest over the 180 degree counter.
-	// Also takes care of the -30 degrees offset.
-
-	// If the current swing is between -150 and -180.
-	if (CurrentSwingDegree <= -150 && CurrentSwingDegree >= -180) 
+	// Calculates the Degrees over the half turn points.
+	if (CurrentSwing1Degree <= 30 && CurrentSwing1Degree >= -180)
+	{
+		// Degree calculation on the Degrees which are over 180.
+		CalculatedOver180Degrees = 30 - CurrentSwing1Degree;
+		// If its bigger than 180, subtract 180 degrees to get the degrees, that are over 180.
+		if (CalculatedOver180Degrees >= 180)
 		{
-			CurrentSwingDegree = -150 + CurrentSwingDegree;
-		} 
-		// If the current swing is between -150 and 30.
-		else if (CurrentSwingDegree > -150 && CurrentSwingDegree < 30 && bIsTurnFlagOn) 
-		{
-			CurrentSwingDegree = 30 - CurrentSwingDegree;
+			CalculatedOver180Degrees = CalculatedOver180Degrees - 180;
 		}
-		// If the current swing is between 30 and 180
-		else 
-		{
-			CurrentSwingDegree = 210 - CurrentSwingDegree;
-		}
+	}
+	else
+	{
+		// Since the actual CurrentSwing1Degree value must be above 30 its a positive value.
+		// By subtracting 210 and the degree value the correct value above the 180 degree point gets calculated.
+		CalculatedOver180Degrees = 210 - CurrentSwing1Degree;
+	}
 
-	// The degree over the 180 degree counter + 180 degree counter * 180 degrees
-	// is the real turned value, return this value.
-	return CurrentSwingDegree + (TurnCounter * 180);;
+	// Set the current Swing1 Degrees as OldSwing1Degrees for the next run in this function.
+	OldSwing1Degree = CurrentSwing1Degree;
+	// Returns the actual real turned degrees.
+	return (CalculatedOver180Degrees + (TurnCounter * 180));
 }
 
 // Function to move the lid and break the constraint when the screw angle is passed.
 void ARealisticOpeningActor::MovingAndBreaking(float CurrentDegree) 
 {
-	// Debug Logging.
-	/*if (!this->GetConstraintComp()->IsBroken() && ((OldCurrentDegreeForDebug + 1) < CurrentDegree || (OldCurrentDegreeForDebug - 1) > CurrentDegree))
-		{
-			UE_LOG(LogTemp, Display, TEXT("Current Degree: %f"), CurrentDegree);
-		//	UE_LOG(LogTemp, Display, TEXT("Distance of the lid: %f"), (CurrentDegree * UpMovingDistancePerDegree));
-			OldCurrentDegreeForDebug = CurrentDegree;
-		}*/
 	// To move upwards.
 	float moveUp = -(CurrentDegree * UpMovingDistancePerDegree);
 	this->GetConstraintComp()->SetLinearZLimit(ELinearConstraintMotion::LCM_Limited, -moveUp);
-	//this->GetConstraintComp()->SetLinearVelocityTarget(FVector::FVector(0, 0, moveUp));
 	this->GetConstraintComp()->SetLinearPositionTarget(FVector::FVector(0, 0, moveUp));
-
 	this->GetConstraintComp()->SetLinearVelocityDrive(false, false, true);
+
 	// If it has reached or passed the screw angle with the degrees, break it.
-	if (CurrentDegree >= (OldCurrentDegreeForDebug + 1))
-		{
-			UE_LOG(LogTemp, Display, TEXT("TurnCounter: %d"), this->TurnCounter);
-			UE_LOG(LogTemp, Display, TEXT("Current: %f"), CurrentDegree);
-			UE_LOG(LogTemp, Display, TEXT("Swing 1: %f"), this->GetConstraintComp()->GetCurrentSwing1());
-			UE_LOG(LogTemp, Display, TEXT("Is Broken!"));
-		} 
-	if (CurrentDegree >= ScrewAngle) 
+	if (CurrentDegree >= DestroyAngle) 
 		{
 			this->GetConstraintComp()->BreakConstraint();
 		}
@@ -354,7 +322,7 @@ void ARealisticOpeningActor::PostEditChangeProperty(struct FPropertyChangedEvent
 	// Name of the property that is changed. If the proberty isn't named at all, set it on NAME_None.
 	FName PropertyName = (e.Property != NULL) ? e.Property->GetFName() : NAME_None;
 	// If the bottle is set.
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(ARealisticOpeningActor, Bottle) && ActiveOpeningConstraint) 
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(ARealisticOpeningActor, Bottle) && bIsActiveOpeningConstraint) 
 		{
 			// Sets the location of the constraint on the position of the bottle automaticly.
 			this->SetActorLocation(Bottle->GetActorLocation());
@@ -363,24 +331,24 @@ void ARealisticOpeningActor::PostEditChangeProperty(struct FPropertyChangedEvent
 			// Set this actor already on the constraint, so it also gets the usal red color for the first actor.
 			this->GetConstraintComp()->ConstraintActor1 = Bottle;
 		}
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(ARealisticOpeningActor, Lid) && ActiveOpeningConstraint) 
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(ARealisticOpeningActor, Lid) && bIsActiveOpeningConstraint) 
 		{
 			// Set this actor already on the constraint, so it also gets the usal blue color for the second actor.
 			this->GetConstraintComp()->ConstraintActor2 = Lid;
 		}
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(ARealisticOpeningActor, ActiveOpeningConstraint)) 
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(ARealisticOpeningActor, bIsActiveOpeningConstraint)) 
 		{
 			// If the Opening constraint should be active set everything for the bottle opening.
-			if (ActiveOpeningConstraint) 
+			if (bIsActiveOpeningConstraint) 
 				{
 					BottleOpening();
 				}
 		}
-	if (PropertyName == GET_MEMBER_NAME_CHECKED(ARealisticOpeningActor, RotateDirectionRight)) 
+	if (PropertyName == GET_MEMBER_NAME_CHECKED(ARealisticOpeningActor, bIsRotateDirectionRight)) 
 		{
 			// If the Opening constraint should be active set everything for the bottle opening.
 			// Will set it the way it's needed for the rotation way.
-			if (ActiveOpeningConstraint) 
+			if (bIsActiveOpeningConstraint) 
 			{
 				BottleOpening();
 			}
